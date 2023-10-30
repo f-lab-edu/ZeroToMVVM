@@ -36,12 +36,12 @@ class MainActivity : AppCompatActivity() {
                 .setReorderingAllowed(true)
                 .add(R.id.container_main, wishFragment, WISH_FRAGMENT_TAG)
                 .hide(wishFragment)
-                .commit()
+                .commitNow()
 
             beginTransaction()
                 .setReorderingAllowed(true)
                 .add(R.id.container_main, homeFragment, HOME_FRAGMENT_TAG)
-                .commit()
+                .commitNow()
         }
     }
 
