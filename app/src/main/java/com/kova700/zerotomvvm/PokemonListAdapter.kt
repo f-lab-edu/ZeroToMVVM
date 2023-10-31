@@ -9,7 +9,7 @@ class PokemonListAdapter : ListAdapter<PokemonListItem, PokemonListViewHolder>(P
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListViewHolder {
         val itemView =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_home, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.item_pokemon_list, parent, false)
         return PokemonListViewHolder(itemView, itemClickListener)
     }
 
@@ -17,5 +17,5 @@ class PokemonListAdapter : ListAdapter<PokemonListItem, PokemonListViewHolder>(P
         holder.bind(getItem(position))
     }
 
-    override fun getItemViewType(position: Int): Int = R.layout.item_home
+    override fun getItemViewType(position: Int): Int = R.layout.item_pokemon_list
 }
