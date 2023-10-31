@@ -37,26 +37,30 @@ class HomeFragment : Fragment() {
 
     private fun initAdapter() {
         homeAdapter = PokemonListAdapter()
-        homeAdapter.itemClickListener = object : PokemonItemClickListener {
-            override fun onItemClick(itemPosition: Int) {
-                val selectedItem = homeAdapter.currentList[itemPosition]
-                Toast.makeText(activity, "Detail Activity로 데이터가지고 이동", Toast.LENGTH_SHORT).show()
-                //Detail Activity로 데이터가지고 이동
+            .apply {
+                itemClickListener = object : PokemonItemClickListener {
+                    override fun onItemClick(itemPosition: Int) {
+                        val selectedItem = homeAdapter.currentList[itemPosition]
+                        Toast.makeText(activity, "Detail Activity로 데이터가지고 이동", Toast.LENGTH_SHORT)
+                            .show()
+                        //Detail Activity로 데이터가지고 이동
 
-            }
+                    }
 
-            override fun onHeartClick(itemPosition: Int) {
-                //Adapter가 가지고 있는 데이터 상태 변경하고 그 아이템 바인딩 다시해서 하트 표시 다시하기
-                Toast.makeText(activity, "하트 눌림", Toast.LENGTH_SHORT).show()
+                    override fun onHeartClick(itemPosition: Int) {
+                        //Adapter가 가지고 있는 데이터 상태 변경하고 그 아이템 바인딩 다시해서 하트 표시 다시하기
+                        Toast.makeText(activity, "하트 눌림", Toast.LENGTH_SHORT).show()
 //                homeAdapter.currentList[itemPosition]
+                    }
+
+                }
             }
 
-        }
     }
 
     private fun initRecyclerView() {
         //추후 화면 사이즈에 맞게 SpaneCount 설정
-        recyclerview.layoutManager = GridLayoutManager(activity, 2)
+        recyclerview.layoutManager = GridLayoutManager(requireActivity(), 2)
             .apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
