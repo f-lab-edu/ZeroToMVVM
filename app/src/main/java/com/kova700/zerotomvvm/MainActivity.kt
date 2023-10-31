@@ -5,14 +5,18 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
-
-    private val bottomNavigationView by lazy { findViewById<BottomNavigationView>(R.id.bottomNavigationView) }
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        connectViewComponent()
         initFragmentContainer(savedInstanceState)
         initBottomNavigationView()
+    }
+
+    private fun connectViewComponent() {
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
     }
 
     private fun initBottomNavigationView() {
