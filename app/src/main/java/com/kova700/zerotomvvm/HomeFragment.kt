@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 //TODO: 생성자에 Layout ID 넘겨서 xml 연결 가능
-class HomeFragment : Fragment(R.layout.fragment_home) {
+class HomeFragment : Fragment() {
 
-    private lateinit var homeAdapter: HomeAdapter
+    private lateinit var homeAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
     private val dummy = getDummy()
 
@@ -36,8 +36,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun initAdapter() {
-        homeAdapter = HomeAdapter()
-        homeAdapter.itemClickListener = object : HomeItemClickListener {
+        homeAdapter = PokemonListAdapter()
+        homeAdapter.itemClickListener = object : PokemonItemClickListener {
             override fun onItemClick(itemPosition: Int) {
                 val selectedItem = homeAdapter.currentList[itemPosition]
                 Toast.makeText(activity, "Detail Activity로 데이터가지고 이동", Toast.LENGTH_SHORT).show()
