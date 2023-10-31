@@ -1,6 +1,7 @@
 package com.kova700.zerotomvvm
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,9 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 //TODO: 생성자에 Layout ID 넘겨서 xml 연결 가능
 class HomeFragment : Fragment() {
 
-    private lateinit var homeAdapter: PokemonListAdapter
+    lateinit var homeAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
-    private val dummy = getDummy()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,7 +28,7 @@ class HomeFragment : Fragment() {
         initAdapter()
         initRecyclerView()
         inflateDummyData()
-//        initGettingEvent()
+//        initFragmentResultListener()
     }
 
     private fun View.connectViewComponent() {
@@ -48,9 +48,7 @@ class HomeFragment : Fragment() {
                     }
 
                     override fun onHeartClick(itemPosition: Int) {
-                        //Adapter가 가지고 있는 데이터 상태 변경하고 그 아이템 바인딩 다시해서 하트 표시 다시하기
-                        Toast.makeText(activity, "하트 눌림", Toast.LENGTH_SHORT).show()
-//                homeAdapter.currentList[itemPosition]
+                        addWishItem(homeAdapter.currentList[itemPosition].copy(heart = true))
                     }
 
                 }
@@ -66,7 +64,7 @@ class HomeFragment : Fragment() {
                     override fun getSpanSize(position: Int): Int {
                         //추후에 다른 뷰타입이 추가된다면 할당되는 칸 수 조절
                         return when (homeAdapter.getItemViewType(position)) {
-                            R.layout.item_home -> 1
+                            R.layout.item_pokemon_list -> 1
                             else -> throw Exception() //올바른 예외로 수정
                         }
                     }
@@ -75,16 +73,31 @@ class HomeFragment : Fragment() {
         recyclerview.adapter = homeAdapter
     }
 
-    private fun inflateDummyData() {
-        homeAdapter.submitList(dummy)
+    private fun addWishItem(pokemonListItem: PokemonListItem) {
+        val mainActivity = (requireActivity() as? MainActivity) ?: return
+        mainActivity.wishPokeymonList.add(pokemonListItem)
+        pokemonListItem.heart = true
+        mainActivity.wishNewDataFlag = true //WishFagment가 데이터 갱신이 필요함을 알아야함
     }
 
-//    //변화값 주고 받을 떄 이런 형식 가능할듯
-//    private fun initGettingEvent() {
-//        val result = Bundle().apply {
-////            putString("newWishItem", "결과")
+    private fun inflateDummyData() {
+        val mainActivity = (requireActivity() as? MainActivity) ?: return
+        homeAdapter.submitList(mainActivity.homePokeymonList.toList())
+    }
+
+//    //wish에 추가된 애들이 있을 수 있으니 새로고침 Flag 보내줌 (Wish에 추가될 애들이 있는경우)
+//    //parentFragmentManager.setFragmentResult("addWish", result)로 데이터 전달
+//    private fun addFragmentResult() {
+//        parentFragmentManager.setFragmentResult("addWish", bundleOf("addflag" to true))
+//    }
+//
+//    //wish에서 삭제된 애들이 있을 수 있으니 Flag확인 (Wish에서 제거될 애들 == 하트 비워줘야하는 애들)
+//    private fun initFragmentResultListener() {
+//        parentFragmentManager.setFragmentResultListener("deleteWish", this) { key, bundle ->
+//            Toast.makeText(activity, "Home 데이터 갱신", Toast.LENGTH_SHORT).show()
+//            bundle.getString("deleteflag") ?: return@setFragmentResultListener
+//            inflateDummyData()
 //        }
-//        parentFragmentManager.setFragmentResult("newWishItemKey", result)
 //    }
 
 }
