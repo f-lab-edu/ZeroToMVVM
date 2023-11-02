@@ -14,6 +14,7 @@ class WishFragment : Fragment() {
 
     lateinit var wishAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
+    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,7 +27,11 @@ class WishFragment : Fragment() {
         view.connectViewComponent()
         initAdapter()
         initRecyclerView()
-//        initFragmentResultListener()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
         inflateWishData()
     }
 
@@ -70,7 +75,6 @@ class WishFragment : Fragment() {
     }
 
     private fun removeWishItem(position: Int) {
-        val mainActivity = (requireActivity() as? MainActivity) ?: return
         val deletedPokemonItem = mainActivity.wishPokeymonList.removeAt(position)
         mainActivity.homePokeymonList.forEachIndexed { index, pokemonListItem ->
             if (pokemonListItem.pokemon.name == deletedPokemonItem.pokemon.name) {
@@ -82,21 +86,6 @@ class WishFragment : Fragment() {
     }
 
     private fun inflateWishData() {
-        val mainActivity = (requireActivity() as? MainActivity) ?: return
         wishAdapter.submitList(mainActivity.wishPokeymonList.toList())
     }
-//
-//    //wish에 삭제될 애들이 있을 수 있으니 새로고침 Flag 실어서 보내줌 (Wish에서 사라진 애들이 있을 경우 == 목록에서 빈하트 처리해줘야할 애들)
-//    private fun addFragmentResult() {
-//        parentFragmentManager.setFragmentResult("deleteWish", bundleOf("deleteflag" to true))
-//    }
-//
-//    //새로 추가된 애들이 있을수 있으니 새로고침 Flag확인하고 화면 갱신 (Wish에 추가될 애들 == 리스트에 넣어줄 애들)
-//    private fun initFragmentResultListener() {
-//        parentFragmentManager.setFragmentResultListener("addWish", this) { key, bundle ->
-//            Toast.makeText(activity, "Wish 데이터 갱신", Toast.LENGTH_SHORT).show()
-//            bundle.getString("addflag") ?: return@setFragmentResultListener
-//            inflateWishData()
-//        }
-//    }
 }

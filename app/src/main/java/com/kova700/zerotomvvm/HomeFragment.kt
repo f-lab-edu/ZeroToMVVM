@@ -1,7 +1,6 @@
 package com.kova700.zerotomvvm
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ class HomeFragment : Fragment() {
 
     lateinit var homeAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
+    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,13 +22,18 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_home, container, false)
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.connectViewComponent()
         initAdapter()
         initRecyclerView()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
         inflateDummyData()
-//        initFragmentResultListener()
     }
 
     private fun View.connectViewComponent() {
@@ -53,7 +58,6 @@ class HomeFragment : Fragment() {
 
                 }
             }
-
     }
 
     private fun initRecyclerView() {
@@ -74,30 +78,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun addWishItem(pokemonListItem: PokemonListItem) {
-        val mainActivity = (requireActivity() as? MainActivity) ?: return
         mainActivity.wishPokeymonList.add(pokemonListItem)
         pokemonListItem.heart = true
         mainActivity.wishNewDataFlag = true //WishFagment가 데이터 갱신이 필요함을 알아야함
     }
 
     private fun inflateDummyData() {
-        val mainActivity = (requireActivity() as? MainActivity) ?: return
         homeAdapter.submitList(mainActivity.homePokeymonList.toList())
     }
-
-//    //wish에 추가된 애들이 있을 수 있으니 새로고침 Flag 보내줌 (Wish에 추가될 애들이 있는경우)
-//    //parentFragmentManager.setFragmentResult("addWish", result)로 데이터 전달
-//    private fun addFragmentResult() {
-//        parentFragmentManager.setFragmentResult("addWish", bundleOf("addflag" to true))
-//    }
-//
-//    //wish에서 삭제된 애들이 있을 수 있으니 Flag확인 (Wish에서 제거될 애들 == 하트 비워줘야하는 애들)
-//    private fun initFragmentResultListener() {
-//        parentFragmentManager.setFragmentResultListener("deleteWish", this) { key, bundle ->
-//            Toast.makeText(activity, "Home 데이터 갱신", Toast.LENGTH_SHORT).show()
-//            bundle.getString("deleteflag") ?: return@setFragmentResultListener
-//            inflateDummyData()
-//        }
-//    }
 
 }
