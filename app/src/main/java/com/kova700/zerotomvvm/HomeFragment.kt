@@ -2,10 +2,13 @@ package com.kova700.zerotomvvm
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_EXTRA
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -37,13 +40,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     override fun onItemClick(itemPosition: Int) {
                         val selectedItem = homeAdapter.currentList[itemPosition]
                         val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
-                            putExtra("selectedPokeymon", selectedItem)
+                            putExtra(TO_DETAIL_EXTRA, selectedItem)
                         }
                         startActivity(intent)
                     }
 
                     override fun onHeartClick(itemPosition: Int) {
-                        addWishItem(homeAdapter.currentList[itemPosition].copy(heart = true))
+                        val selectedItem = homeAdapter.currentList[itemPosition]
+                        mainActivity.homePokeymonList[itemPosition] =
+                            selectedItem.copy(heart = !selectedItem.heart)
                     }
 
                 }
@@ -59,18 +64,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         //추후에 다른 뷰타입이 추가된다면 할당되는 칸 수 조절
                         return when (homeAdapter.getItemViewType(position)) {
                             R.layout.item_pokemon_list -> 1
-                            else -> throw Exception() //올바른 예외로 수정
+                            else -> throw Exception("Unknown Item Layout")
                         }
                     }
                 }
             }
         recyclerview.adapter = homeAdapter
-    }
-
-    private fun addWishItem(pokemonListItem: PokemonListItem) {
-        mainActivity.wishPokeymonList.add(pokemonListItem)
-        pokemonListItem.heart = true
-        mainActivity.wishNewDataFlag = true //WishFagment가 데이터 갱신이 필요함을 알아야함
     }
 
     private fun inflateDummyData() {

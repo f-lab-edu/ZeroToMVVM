@@ -1,28 +1,24 @@
 package com.kova700.zerotomvvm
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var bottomNavigationView: BottomNavigationView
+class MainActivity : AppCompatActivity(R.layout.activity_main) {
+
+    private val bottomNavigationView by lazy {
+        findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+    }
+
     val homePokeymonList = getDummy()
-    val wishPokeymonList :MutableList<PokemonListItem> = homePokeymonList.filter { it.heart }.toMutableList()
-    var homeNewDataFlag = false
-    var wishNewDataFlag = false
+    val wishPokeymonList: List<PokemonListItem>
+        get() = homePokeymonList.filter { it.heart }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        connectViewComponent()
         initFragmentContainer(savedInstanceState)
         initBottomNavigationView()
-    }
-
-    private fun connectViewComponent() {
-        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
     }
 
     private fun initBottomNavigationView() {
@@ -56,7 +52,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFragment(fragmentTag: String) {
-        if (fragmentTag !in fragmentTagList) throw Exception() //올바른 예외로 수정
+        if (fragmentTag !in fragmentTagList) throw Exception("Unknown Fragment")
 
         val targetFragment = getFragmentByTag(fragmentTag)
         val transaction = supportFragmentManager.beginTransaction()
@@ -71,28 +67,22 @@ class MainActivity : AppCompatActivity() {
     private fun renewItemList(targetFragment: Fragment) {
         when (targetFragment) {
             is HomeFragment -> {
-                if (homeNewDataFlag) {
-                    targetFragment.homeAdapter.submitList(homePokeymonList.toList())
-                    homeNewDataFlag = false
-                }
+                targetFragment.homeAdapter.submitList(homePokeymonList.toList())
             }
 
             is WishFragment -> {
-                if (wishNewDataFlag) {
-                    Log.d(TAG, "MainActivity: renewItemList() - Wish 갱신되어야해")
-                    targetFragment.wishAdapter.submitList(wishPokeymonList.toList())
-                    wishNewDataFlag = false
-                }
+                targetFragment.wishAdapter.submitList(wishPokeymonList.toList())
             }
         }
     }
 
     private fun getFragmentByTag(tag: String) =
-        supportFragmentManager.findFragmentByTag(tag) ?: throw Exception() //올바른 예외로 수정
+        supportFragmentManager.findFragmentByTag(tag) ?: throw Exception("Unknown Fragment Tag")
 
     companion object {
         const val HOME_FRAGMENT_TAG = "HOME_FRAGMENT_TAG"
         const val WISH_FRAGMENT_TAG = "WISH_FRAGMENT_TAG"
         val fragmentTagList = listOf(HOME_FRAGMENT_TAG, WISH_FRAGMENT_TAG)
+        const val TO_DETAIL_EXTRA = "selectedPokeymon"
     }
 }
