@@ -4,7 +4,7 @@ import java.io.Serializable
 
 data class PokemonListItem(
     val pokemon: Pokemon,
-    val heart: Boolean
+    var heart: Boolean
 ) : Serializable
 
 data class Pokemon(

@@ -2,9 +2,7 @@ package com.kova700.zerotomvvm
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,8 +47,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         val selectedItem = homeAdapter.currentList[itemPosition]
                         mainActivity.homePokeymonList[itemPosition] =
                             selectedItem.copy(heart = !selectedItem.heart)
+                        //스크롤 이동 후 다시 돌아올 때, Heart값이 ListAdapter에는 그대로 false로 남아 있어서
+                        //다시 binding될 떄, 하트가 원래 값으로 돌아오는 현상이 있어서
+                        //PokemonListItem 클래스의 Heart 프로퍼티 값을 수정가능하게 var로 변경
+                        homeAdapter.currentList[itemPosition].heart = !selectedItem.heart
                     }
-
                 }
             }
     }
@@ -75,5 +76,4 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun inflateDummyData() {
         homeAdapter.submitList(mainActivity.homePokeymonList.toList())
     }
-
 }
