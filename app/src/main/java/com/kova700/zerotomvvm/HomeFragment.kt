@@ -1,8 +1,8 @@
 package com.kova700.zerotomvvm
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,10 +36,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 itemClickListener = object : PokemonItemClickListener {
                     override fun onItemClick(itemPosition: Int) {
                         val selectedItem = homeAdapter.currentList[itemPosition]
-                        Toast.makeText(activity, "Detail Activity로 데이터가지고 이동", Toast.LENGTH_SHORT)
-                            .show()
-                        //Detail Activity로 데이터가지고 이동
-
+                        val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
+                            putExtra("selectedPokeymon", selectedItem)
+                        }
+                        startActivity(intent)
                     }
 
                     override fun onHeartClick(itemPosition: Int) {
