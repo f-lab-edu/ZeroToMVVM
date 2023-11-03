@@ -1,24 +1,32 @@
 package com.kova700.zerotomvvm
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_EXTRA
+import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
+import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
+import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
+import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
 
 class WishFragment : Fragment(R.layout.fragment_wish) {
 
     lateinit var wishAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
     private lateinit var mainActivity: MainActivity
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.connectViewComponent()
         initAdapter()
         initRecyclerView()
+        initActivityResultLauncher()
     }
 
     override fun onStart() {
@@ -31,6 +39,19 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
         recyclerview = this@connectViewComponent.findViewById<RecyclerView>(R.id.rcv_wish_fragment)
     }
 
+    private fun initActivityResultLauncher() {
+        activityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+
+                val intent = result.data ?: throw Exception("DetailActivity result is not exist")
+                val heartValue = intent.getBooleanExtraData(TO_MAIN_HEART_BOOLEAN_EXTRA)
+                val itemPosition = intent.getIntExtraData(TO_MAIN_ITEM_POSITION_EXTRA)
+                if (heartValue) return@registerForActivityResult
+                removeWishItem(wishAdapter.currentList[itemPosition])
+            }
+    }
+
     private fun initAdapter() {
         wishAdapter = PokemonListAdapter()
             .apply {
@@ -38,9 +59,10 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
                     override fun onItemClick(itemPosition: Int) {
                         val selectedItem = wishAdapter.currentList[itemPosition]
                         val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
-                            putExtra(TO_DETAIL_EXTRA, selectedItem)
+                            putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
+                            putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
                         }
-                        startActivity(intent)
+                        activityResultLauncher.launch(intent)
                     }
 
                     override fun onHeartClick(itemPosition: Int) {

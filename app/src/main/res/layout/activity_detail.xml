@@ -6,4 +6,42 @@
     android:layout_height="match_parent"
     tools:context=".DetailActivity">
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/siv_detail_activity"
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
+        android:background="#F0EAF5"
+        android:elevation="9dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CardView" />
+
+    <ImageView
+        android:id="@+id/iv_pokemon_image_detail_activity"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:scaleType="center"
+        android:translationZ="100dp"
+        app:layout_constraintBottom_toBottomOf="@+id/siv_detail_activity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/tg_detail_activity"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="7dp"
+        android:translationZ="100dp"
+        android:background="@drawable/selector_wish_btn"
+        android:scaleType="fitXY"
+        android:textOff=""
+        android:textOn=""
+        style="?android:attr/borderlessButtonStyle"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_pokemon_image_detail_activity"
+        app:layout_constraintEnd_toEndOf="@+id/siv_detail_activity"
+        app:layout_constraintStart_toEndOf="@+id/iv_pokemon_image_detail_activity"
+        app:layout_constraintTop_toTopOf="@+id/siv_detail_activity"
+        app:layout_constraintVertical_bias="1.0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
