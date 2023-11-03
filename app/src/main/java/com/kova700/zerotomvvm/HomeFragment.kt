@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
@@ -19,6 +20,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     lateinit var homeAdapter: PokemonListAdapter
     private lateinit var recyclerview: RecyclerView
     private lateinit var mainActivity: MainActivity
+    private lateinit var itemAddBtn: FloatingActionButton
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,7 +38,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun View.connectViewComponent() {
-        recyclerview = this@connectViewComponent.findViewById<RecyclerView>(R.id.rcv_home_fragment)
+        recyclerview = this@connectViewComponent.findViewById(R.id.rcv_home_fragment)
+        itemAddBtn = this@connectViewComponent.findViewById(R.id.fab_home_fragment)
+        itemAddBtn.setOnClickListener {
+            val mainList = mainActivity.homePokeymonList
+            mainList.add(getRandomDummyItem(mainList.size + 1))
+            homeAdapter.submitList(mainList.toList())
+        }
     }
 
     private fun initActivityResultLauncher() {
