@@ -63,24 +63,22 @@ class WishFragment : Fragment() {
     }
 
     private fun initAdapter() {
-        wishAdapter = PokemonListAdapter()
-            .apply {
-                itemClickListener = object : PokemonItemClickListener {
-                    override fun onItemClick(itemPosition: Int) {
-                        val selectedItem = wishAdapter.currentList[itemPosition]
-                        val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
-                            putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-                            putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
-                        }
-                        activityResultLauncher.launch(intent)
-                    }
-
-                    override fun onHeartClick(itemPosition: Int) {
-                        val selectedItem = wishAdapter.currentList[itemPosition]
-                        if (selectedItem.heart) removeWishItem(selectedItem)
-                    }
+        val itemClickListener = object : PokemonItemClickListener {
+            override fun onItemClick(itemPosition: Int) {
+                val selectedItem = wishAdapter.currentList[itemPosition]
+                val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
+                    putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
+                    putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
                 }
+                activityResultLauncher.launch(intent)
             }
+
+            override fun onHeartClick(itemPosition: Int) {
+                val selectedItem = wishAdapter.currentList[itemPosition]
+                if (selectedItem.heart) removeWishItem(selectedItem)
+            }
+        }
+        wishAdapter = PokemonListAdapter(itemClickListener)
     }
 
     private fun initRecyclerView() {
@@ -121,6 +119,7 @@ class WishFragment : Fragment() {
 
     companion object {
         private const val WISH_RCV_STATE_KEY = "WISH_RCV_STATE_KEY"
+
         //ViewModel이나 Activity의 생명주기에 따라 삭제되는 곳으로 이전하는 게 좋아 보임 (메모리가 계속 남아있을테니)
         var rcvState: Parcelable? = null
 
