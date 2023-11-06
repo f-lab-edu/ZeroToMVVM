@@ -2,17 +2,15 @@ package com.kova700.zerotomvvm
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.kova700.zerotomvvm.FragmentTags.HOME_FRAGMENT_TAG
+import com.kova700.zerotomvvm.FragmentTags.WISH_FRAGMENT_TAG
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private val bottomNavigationView by lazy {
         findViewById<BottomNavigationView>(R.id.bottomNavigationView)
     }
-
-    val homeFragment: HomeFragment by lazy { HomeFragment() }
-    val wishFragment: WishFragment by lazy { WishFragment() }
 
     val homePokeymonList = getDummy()
     val wishPokeymonList: List<PokemonListItem>
@@ -27,8 +25,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private fun initBottomNavigationView() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.bottom_menu_home -> showFragment(homeFragment)
-                R.id.bottom_menu_wish -> showFragment(wishFragment)
+                R.id.bottom_menu_home -> showFragment(HOME_FRAGMENT_TAG)
+                R.id.bottom_menu_wish -> showFragment(WISH_FRAGMENT_TAG)
             }
             true
         }
@@ -36,13 +34,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private fun initFragmentContainer(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) return
-        showFragment(homeFragment)
+        showFragment(HOME_FRAGMENT_TAG)
     }
 
-    private fun showFragment(targetFragment: Fragment) {
+    private fun showFragment(tag: FragmentTags) {
+        val targetFragment = getFragmentInstanceByTag(tag)
+
         supportFragmentManager.beginTransaction()
             .setReorderingAllowed(true)
-            .replace(R.id.container_main, targetFragment)
+            .replace(R.id.container_main, targetFragment, tag.name)
             .commitNow()
     }
 
