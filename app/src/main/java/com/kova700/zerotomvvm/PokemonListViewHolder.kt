@@ -1,39 +1,29 @@
 package com.kova700.zerotomvvm
 
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.ToggleButton
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
-class PokemonListViewHolder(itemView: View, itemClickListener: PokemonItemClickListener) :
-    RecyclerView.ViewHolder(itemView) {
+class PokemonListViewHolder(
+    private val binding: ItemPokemonListBinding,
+    itemClickListener: PokemonItemClickListener
+) : RecyclerView.ViewHolder(binding.root) {
 
-    private val carView: CardView =
-        itemView.findViewById<CardView?>(R.id.cv_home_item)
-            .apply {
-                setOnClickListener {
-                    itemClickListener.onItemClick(absoluteAdapterPosition)
-                }
-            }
-    private val wishToggleBtn = itemView.findViewById<ToggleButton?>(R.id.tg_wish_home_item)
-        .apply {
-            setOnClickListener {
-                itemClickListener.onHeartClick(absoluteAdapterPosition)
-            }
+    init {
+        binding.root.setOnClickListener {
+            itemClickListener.onItemClick(absoluteAdapterPosition)
         }
-    private val pokemonImageView: ImageView = itemView.findViewById(R.id.iv_pokemon_image_home_item)
-    private val pokemonNameTextView: TextView =
-        itemView.findViewById(R.id.tv_pokemon_name_home_item)
+        binding.tgWishHomeItem.setOnClickListener {
+            itemClickListener.onHeartClick(absoluteAdapterPosition)
+        }
+    }
 
     fun bind(pokemonListItem: PokemonListItem) {
         Glide.with(itemView.context)
             .load(pokemonListItem.pokemon.getImageUrl())
-            .into(pokemonImageView)
+            .into(binding.ivPokemonImageHomeItem)
 
-        pokemonNameTextView.text = pokemonListItem.pokemon.name
-        wishToggleBtn.isChecked = pokemonListItem.heart
+        binding.tvPokemonNameHomeItem.text = pokemonListItem.pokemon.name
+        binding.tgWishHomeItem.isChecked = pokemonListItem.heart
     }
 }
