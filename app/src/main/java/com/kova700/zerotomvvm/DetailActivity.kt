@@ -40,7 +40,7 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
         binding.tgDetailActivity.apply {
             isChecked = pokemonListItem.heart
             setOnClickListener {
-                pokemonListItem.heart = !pokemonListItem.heart
+                pokemonListItem.heart = pokemonListItem.heart.not()
             }
         }
     }
