@@ -5,25 +5,26 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 
-class HomeFragment : Fragment(R.layout.fragment_home) {
+class HomeFragment : Fragment() {
 
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
     lateinit var homeAdapter: PokemonListAdapter
-    private lateinit var recyclerview: RecyclerView
     private lateinit var mainActivity: MainActivity
-    private lateinit var itemAddBtn: FloatingActionButton
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
     override fun onAttach(context: Context) {
@@ -31,19 +32,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.connectViewComponent()
+        setPlusBtnClickListener()
         initAdapter()
         initRecyclerView()
         initActivityResultLauncher()
         inflateDummyData()
     }
 
-    private fun View.connectViewComponent() {
-        recyclerview = this@connectViewComponent.findViewById(R.id.rcv_home_fragment)
-        itemAddBtn = this@connectViewComponent.findViewById(R.id.fab_home_fragment)
-        itemAddBtn.setOnClickListener {
+    private fun setPlusBtnClickListener() {
+        binding.fabHomeFragment.setOnClickListener {
             val mainList = mainActivity.homePokeymonList
             mainList.add(getRandomDummyItem(mainList.size + 1))
             homeAdapter.submitList(mainList.toList())
@@ -99,12 +107,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun initRecyclerView() {
-        //추후 화면 사이즈에 맞게 SpaneCount 설정
-        recyclerview.layoutManager = GridLayoutManager(requireActivity(), 2)
-            .apply {
+        binding.rcvHomeFragment.apply {
+            adapter = homeAdapter
+            layoutManager = GridLayoutManager(requireActivity(), 2).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
-                        //추후에 다른 뷰타입이 추가된다면 할당되는 칸 수 조절
                         return when (homeAdapter.getItemViewType(position)) {
                             R.layout.item_pokemon_list -> 1
                             else -> throw Exception("Unknown Item Layout")
@@ -113,16 +120,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
                 onRestoreInstanceState(arguments?.getParcelable(HOME_RCV_STATE_KEY))
             }
-        recyclerview.adapter = homeAdapter
+        }
     }
 
     private fun inflateDummyData() {
         homeAdapter.submitList(mainActivity.homePokeymonList.toList())
     }
 
-    override fun onStop() {
-        super.onStop()
-        rcvState = recyclerview.layoutManager?.onSaveInstanceState()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        rcvState = binding.rcvHomeFragment.layoutManager?.onSaveInstanceState()
+        _binding = null //쓰지 않을 bindingView를 가지고 있을 이유가 없음으로 메모리 반환
     }
 
     companion object {
