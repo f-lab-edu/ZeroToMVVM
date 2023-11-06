@@ -2,15 +2,12 @@ package com.kova700.zerotomvvm
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.kova700.zerotomvvm.FragmentTags.HOME_FRAGMENT_TAG
 import com.kova700.zerotomvvm.FragmentTags.WISH_FRAGMENT_TAG
+import com.kova700.zerotomvvm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
-
-    private val bottomNavigationView by lazy {
-        findViewById<BottomNavigationView>(R.id.bottomNavigationView)
-    }
+    private lateinit var binding: ActivityMainBinding
 
     val homePokeymonList = getDummy()
     val wishPokeymonList: List<PokemonListItem>
@@ -18,12 +15,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initFragmentContainer(savedInstanceState)
         initBottomNavigationView()
     }
 
     private fun initBottomNavigationView() {
-        bottomNavigationView.setOnItemSelectedListener { menuItem ->
+        binding.bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.bottom_menu_home -> showFragment(HOME_FRAGMENT_TAG)
                 R.id.bottom_menu_wish -> showFragment(WISH_FRAGMENT_TAG)
