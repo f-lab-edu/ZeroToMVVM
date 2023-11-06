@@ -8,7 +8,6 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -25,7 +24,6 @@ class WishFragment : Fragment() {
     private val binding get() = _binding!!
     lateinit var wishAdapter: PokemonListAdapter
     private lateinit var mainActivity: MainActivity
-    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -45,22 +43,19 @@ class WishFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
         initRecyclerView()
-        initActivityResultLauncher()
         inflateWishData()
     }
 
-    private fun initActivityResultLauncher() {
-        activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+    private val activityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
 
-                val intent = result.data ?: throw Exception("DetailActivity result is not exist")
-                val heartValue = intent.getBooleanExtraData(TO_MAIN_HEART_BOOLEAN_EXTRA)
-                val itemPosition = intent.getIntExtraData(TO_MAIN_ITEM_POSITION_EXTRA)
-                if (heartValue) return@registerForActivityResult
-                removeWishItem(wishAdapter.currentList[itemPosition])
-            }
-    }
+            val intent = result.data ?: throw Exception("DetailActivity result is not exist")
+            val heartValue = intent.getBooleanExtraData(TO_MAIN_HEART_BOOLEAN_EXTRA)
+            val itemPosition = intent.getIntExtraData(TO_MAIN_ITEM_POSITION_EXTRA)
+            if (heartValue) return@registerForActivityResult
+            removeWishItem(wishAdapter.currentList[itemPosition])
+        }
 
     private fun initAdapter() {
         val itemClickListener = object : PokemonItemClickListener {
