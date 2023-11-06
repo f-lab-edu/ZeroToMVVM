@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -86,6 +88,7 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
                         }
                     }
                 }
+                onRestoreInstanceState(arguments?.getParcelable(WISH_RCV_STATE_KEY))
             }
         recyclerview.adapter = wishAdapter
     }
@@ -100,5 +103,22 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
 
     private fun inflateWishData() {
         wishAdapter.submitList(mainActivity.wishPokeymonList.toList())
+    }
+
+    override fun onStop() {
+        super.onStop()
+        rcvState = recyclerview.layoutManager?.onSaveInstanceState()
+    }
+
+    companion object {
+        private const val WISH_RCV_STATE_KEY = "WISH_RCV_STATE_KEY"
+        //ViewModel이나 Activity의 생명주기에 따라 삭제되는 곳으로 이전하는 게 좋아 보임 (메모리가 계속 남아있을테니)
+        var rcvState: Parcelable? = null
+
+        fun newInstance(): WishFragment {
+            return WishFragment().apply {
+                arguments = bundleOf(WISH_RCV_STATE_KEY to rcvState)
+            }
+        }
     }
 }
