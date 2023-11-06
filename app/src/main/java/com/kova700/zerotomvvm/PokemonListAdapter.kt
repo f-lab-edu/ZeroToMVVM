@@ -5,9 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
-class PokemonListAdapter :
+class PokemonListAdapter(private val itemClickListener: PokemonItemClickListener) :
     ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()) {
-    lateinit var itemClickListener: PokemonItemClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListViewHolder {
         val binding =

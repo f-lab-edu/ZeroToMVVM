@@ -74,36 +74,34 @@ class HomeFragment : Fragment() {
     }
 
     private fun initAdapter() {
-        homeAdapter = PokemonListAdapter()
-            .apply {
-                itemClickListener = object : PokemonItemClickListener {
-                    override fun onItemClick(itemPosition: Int) {
-                        val selectedItem = homeAdapter.currentList[itemPosition]
-                        val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
-                            putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-                            putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
-                        }
-                        activityResultLauncher.launch(intent)
-                    }
-
-                    override fun onHeartClick(itemPosition: Int) {
-                        val selectedItem = homeAdapter.currentList[itemPosition]
-                        mainActivity.homePokeymonList[itemPosition] =
-                            selectedItem.copy(heart = !selectedItem.heart)
-                        ///스크롤 아래로 내린 후 다시 위로 돌아올 때,
-                        //ListAdapter내부 currentList에는 Heart값이 해당 아이템이 그대로 false인 채로  남아 있어서
-                        //다시 뷰홀더에 데이터가 binding될 떄, 하트가 그대로 false로 남아 있는 현상이 발생합니다.
-                        //PokemonListItem 클래스의 Heart 프로퍼티 값을 수정가능하게 var로 변경해서
-                        //homeAdapter.currentList에 있는 아이템의 heart값을 수정해주면 이런 현상을 방지할 수 있습니다.
-
-                        //하지만
-                        //불변 값(val)으로 data class를 구성하는 게 데이터 전달시에 안정적이라는 것을 알기에
-                        //불면 값으로 data class를 구성하고 매번 버튼을 누를 때마다, submitList를 해주는 게 맞는건지 고민입니다.
-
-                        homeAdapter.currentList[itemPosition].heart = !selectedItem.heart
-                    }
+        val itemClickListener = object : PokemonItemClickListener {
+            override fun onItemClick(itemPosition: Int) {
+                val selectedItem = homeAdapter.currentList[itemPosition]
+                val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
+                    putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
+                    putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
                 }
+                activityResultLauncher.launch(intent)
             }
+
+            override fun onHeartClick(itemPosition: Int) {
+                val selectedItem = homeAdapter.currentList[itemPosition]
+                mainActivity.homePokeymonList[itemPosition] =
+                    selectedItem.copy(heart = !selectedItem.heart)
+                ///스크롤 아래로 내린 후 다시 위로 돌아올 때,
+                //ListAdapter내부 currentList에는 Heart값이 해당 아이템이 그대로 false인 채로  남아 있어서
+                //다시 뷰홀더에 데이터가 binding될 떄, 하트가 그대로 false로 남아 있는 현상이 발생합니다.
+                //PokemonListItem 클래스의 Heart 프로퍼티 값을 수정가능하게 var로 변경해서
+                //homeAdapter.currentList에 있는 아이템의 heart값을 수정해주면 이런 현상을 방지할 수 있습니다.
+
+                //하지만
+                //불변 값(val)으로 data class를 구성하는 게 데이터 전달시에 안정적이라는 것을 알기에
+                //불면 값으로 data class를 구성하고 매번 버튼을 누를 때마다, submitList를 해주는 게 맞는건지 고민입니다.
+
+                homeAdapter.currentList[itemPosition].heart = !selectedItem.heart
+            }
+        }
+        homeAdapter = PokemonListAdapter(itemClickListener)
     }
 
     private fun initRecyclerView() {
@@ -135,6 +133,7 @@ class HomeFragment : Fragment() {
 
     companion object {
         private const val HOME_RCV_STATE_KEY = "HOME_RCV_STATE_KEY"
+
         //ViewModel이나 Activity의 생명주기에 따라 삭제되는 곳으로 이전하는 게 좋아 보임 (메모리가 계속 남아있을테니)
         var rcvState: Parcelable? = null
 
