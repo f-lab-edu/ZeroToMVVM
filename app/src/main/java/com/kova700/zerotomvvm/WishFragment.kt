@@ -5,22 +5,25 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import com.kova700.zerotomvvm.databinding.FragmentWishBinding
 
-class WishFragment : Fragment(R.layout.fragment_wish) {
+class WishFragment : Fragment() {
 
+    private var _binding: FragmentWishBinding? = null
+    private val binding get() = _binding!!
     lateinit var wishAdapter: PokemonListAdapter
-    private lateinit var recyclerview: RecyclerView
     private lateinit var mainActivity: MainActivity
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
@@ -29,17 +32,21 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
         mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWishBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.connectViewComponent()
         initAdapter()
         initRecyclerView()
         initActivityResultLauncher()
         inflateWishData()
-    }
-
-    private fun View.connectViewComponent() {
-        recyclerview = this@connectViewComponent.findViewById<RecyclerView>(R.id.rcv_wish_fragment)
     }
 
     private fun initActivityResultLauncher() {
@@ -77,20 +84,21 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
     }
 
     private fun initRecyclerView() {
-        //추후 화면 사이즈에 맞게 SpaneCount 설정
-        recyclerview.layoutManager = GridLayoutManager(requireActivity(), 2)
-            .apply {
-                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int {
-                        return when (wishAdapter.getItemViewType(position)) {
-                            R.layout.item_pokemon_list -> 1
-                            else -> throw Exception("Unknown Item Layout")
+        binding.rcvWishFragment.apply {
+            adapter = wishAdapter
+            layoutManager = GridLayoutManager(requireActivity(), 2)
+                .apply {
+                    spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                        override fun getSpanSize(position: Int): Int {
+                            return when (wishAdapter.getItemViewType(position)) {
+                                R.layout.item_pokemon_list -> 1
+                                else -> throw Exception("Unknown Item Layout")
+                            }
                         }
                     }
+                    onRestoreInstanceState(arguments?.getParcelable(WISH_RCV_STATE_KEY))
                 }
-                onRestoreInstanceState(arguments?.getParcelable(WISH_RCV_STATE_KEY))
-            }
-        recyclerview.adapter = wishAdapter
+        }
     }
 
     private fun removeWishItem(selectedItem: PokemonListItem) {
@@ -105,9 +113,10 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
         wishAdapter.submitList(mainActivity.wishPokeymonList.toList())
     }
 
-    override fun onStop() {
-        super.onStop()
-        rcvState = recyclerview.layoutManager?.onSaveInstanceState()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        rcvState = binding.rcvWishFragment.layoutManager?.onSaveInstanceState()
+        _binding = null
     }
 
     companion object {
