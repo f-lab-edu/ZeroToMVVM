@@ -1,6 +1,7 @@
 package com.kova700.zerotomvvm
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -21,17 +22,17 @@ class WishFragment : Fragment(R.layout.fragment_wish) {
     private lateinit var mainActivity: MainActivity
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.connectViewComponent()
         initAdapter()
         initRecyclerView()
         initActivityResultLauncher()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
         inflateWishData()
     }
 

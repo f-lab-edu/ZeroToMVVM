@@ -1,6 +1,7 @@
 package com.kova700.zerotomvvm
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -23,17 +24,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var itemAddBtn: FloatingActionButton
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent?>
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.connectViewComponent()
         initAdapter()
         initRecyclerView()
         initActivityResultLauncher()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
         inflateDummyData()
     }
 
@@ -74,7 +75,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         }
                         activityResultLauncher.launch(intent)
                     }
-
 
                     override fun onHeartClick(itemPosition: Int) {
                         val selectedItem = homeAdapter.currentList[itemPosition]
