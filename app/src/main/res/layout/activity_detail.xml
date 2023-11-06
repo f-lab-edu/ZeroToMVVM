@@ -44,4 +44,11 @@
         app:layout_constraintTop_toTopOf="@+id/siv_detail_activity"
         app:layout_constraintVertical_bias="1.0" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_bottom_detail_activity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_end="0dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

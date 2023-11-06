@@ -1,7 +1,6 @@
 package com.kova700.zerotomvvm
 
 import android.os.Bundle
-import android.widget.ImageView
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -12,9 +11,15 @@ import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
 class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     private lateinit var binding: ActivityDetailBinding
 
-    private val pokemonListItem by lazy {
+    private val pokemonListItem: PokemonListItemType by lazy {
         intent.getSerializableExtraData(TO_DETAIL_SELECTED_ITEM_EXTRA, PokemonListItem::class.java)
-            ?: throw Exception("pokemon is not exist")
+            ?: EmptyPokemonListItem().also {
+                showSnackBar(
+                    window.decorView.rootView,
+                    binding.glBottomDetailActivity,
+                    R.string.to_detail_activity_data_empty
+                )
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +31,8 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     }
 
     private fun initUIComponent() {
+        if (pokemonListItem is EmptyPokemonListItem) return
+
         Glide.with(this)
             .load(pokemonListItem.pokemon.getImageUrl())
             .into(binding.ivPokemonImageDetailActivity)
@@ -45,6 +52,10 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     }
 
     private fun finishActivity() {
+        if (pokemonListItem is EmptyPokemonListItem) {
+            finish()
+            return
+        }
         intent.putExtra(TO_MAIN_HEART_BOOLEAN_EXTRA, pokemonListItem.heart)
         intent.putExtra(
             TO_MAIN_ITEM_POSITION_EXTRA,
