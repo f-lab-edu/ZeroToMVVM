@@ -11,12 +11,14 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
 import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
+import kotlinx.coroutines.launch
 
 class WishFragment : Fragment() {
 
@@ -43,7 +45,13 @@ class WishFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAdapter()
         initRecyclerView()
-        inflateWishData()
+        observePokemonData()
+    }
+
+    private fun observePokemonData() = lifecycleScope.launch {
+        mainActivity.wishPokeymonListFlow.collect {
+            wishAdapter.submitList(it)
+        }
     }
 
     private val activityResultLauncher =
@@ -95,15 +103,7 @@ class WishFragment : Fragment() {
     }
 
     private fun removeWishItem(selectedItem: PokemonListItem) {
-        mainActivity.homePokeymonList.forEachIndexed { index, pokemonListItem ->
-            if (pokemonListItem.pokemon.name != selectedItem.pokemon.name) return@forEachIndexed
-            mainActivity.homePokeymonList[index] = selectedItem.copy(heart = false)
-        }
-        wishAdapter.submitList(mainActivity.wishPokeymonList.toList())
-    }
-
-    private fun inflateWishData() {
-        wishAdapter.submitList(mainActivity.wishPokeymonList.toList())
+        mainActivity.deletePokemonItem(selectedItem)
     }
 
     override fun onDestroyView() {
