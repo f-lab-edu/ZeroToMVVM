@@ -10,29 +10,25 @@ import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     private lateinit var binding: ActivityDetailBinding
-
-    private val pokemonListItem: PokemonListItemType by lazy {
-        intent.getSerializableExtraData(TO_DETAIL_SELECTED_ITEM_EXTRA, PokemonListItem::class.java)
-            ?: EmptyPokemonListItem().also {
-                showSnackBar(
-                    window.decorView.rootView,
-                    binding.glBottomDetailActivity,
-                    R.string.to_detail_activity_data_empty
-                )
-            }
-    }
+    private lateinit var pokemonListItem: PokemonListItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        getPokemonExtraData()
         setBackPressedEvent()
         initUIComponent()
     }
 
-    private fun initUIComponent() {
-        if (pokemonListItem is EmptyPokemonListItem) return
+    private fun getPokemonExtraData() {
+        pokemonListItem = intent.getSerializableExtraData(
+            TO_DETAIL_SELECTED_ITEM_EXTRA,
+            PokemonListItem::class.java
+        )!!
+    }
 
+    private fun initUIComponent() {
         Glide.with(this)
             .load(pokemonListItem.pokemon.getImageUrl())
             .into(binding.ivPokemonImageDetailActivity)
@@ -40,7 +36,7 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
         binding.tgDetailActivity.apply {
             isChecked = pokemonListItem.heart
             setOnClickListener {
-                pokemonListItem.heart = pokemonListItem.heart.not()
+                pokemonListItem = pokemonListItem.copy(heart = pokemonListItem.heart.not())
             }
         }
     }
@@ -52,10 +48,6 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     }
 
     private fun finishActivity() {
-        if (pokemonListItem is EmptyPokemonListItem) {
-            finish()
-            return
-        }
         intent.putExtra(TO_MAIN_HEART_BOOLEAN_EXTRA, pokemonListItem.heart)
         intent.putExtra(
             TO_MAIN_ITEM_POSITION_EXTRA,
