@@ -15,17 +15,7 @@ data class Pokemon(
     }
 }
 
-sealed interface PokemonListItemType {
-    val pokemon: Pokemon
-    val heart: Boolean
-}
-
 data class PokemonListItem(
-    override val pokemon: Pokemon,
-    override val heart: Boolean
-) : Serializable, PokemonListItemType
-
-data class EmptyPokemonListItem(
-    override val pokemon: Pokemon = Pokemon(" ", " "),
-    override val heart: Boolean = false
-) : Serializable, PokemonListItemType
+    val pokemon: Pokemon,
+    val heart: Boolean
+) : Serializable
