@@ -1,10 +1,12 @@
 package com.kova700.zerotomvvm
 
+import kotlinx.serialization.SerialName
 import java.io.Serializable
 
+@kotlinx.serialization.Serializable
 data class Pokemon(
-    val name: String,
-    val detailInfoUrl: String
+    @SerialName("name") val name: String,
+    @SerialName("url") val detailInfoUrl: String
 ) : Serializable {
     fun getImageUrl(): String {
         val index = detailInfoUrl.split("/".toRegex()).dropLast(1).last()
@@ -13,18 +15,17 @@ data class Pokemon(
     }
 }
 
-// TODO: heart 수정 불가 타입으로 수정
 sealed interface PokemonListItemType {
     val pokemon: Pokemon
-    var heart: Boolean
+    val heart: Boolean
 }
 
 data class PokemonListItem(
     override val pokemon: Pokemon,
-    override var heart: Boolean
+    override val heart: Boolean
 ) : Serializable, PokemonListItemType
 
 data class EmptyPokemonListItem(
     override val pokemon: Pokemon = Pokemon(" ", " "),
-    override var heart: Boolean = false
+    override val heart: Boolean = false
 ) : Serializable, PokemonListItemType
