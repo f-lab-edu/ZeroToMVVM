@@ -1,7 +1,8 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.view.main.adapter
 
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
 class PokemonListViewHolder(

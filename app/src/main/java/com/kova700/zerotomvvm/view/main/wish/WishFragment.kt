@@ -1,4 +1,4 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.view.main.wish
 
 import android.app.Activity
 import android.content.Context
@@ -13,11 +13,19 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
-import com.kova700.zerotomvvm.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
-import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
-import com.kova700.zerotomvvm.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
+import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
+import com.kova700.zerotomvvm.view.main.adapter.PokemonItemClickListener
+import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
+import com.kova700.zerotomvvm.R
+import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
+import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
+import com.kova700.zerotomvvm.util.getBooleanExtraData
+import com.kova700.zerotomvvm.util.getIntExtraData
+import com.kova700.zerotomvvm.view.detail.DetailActivity
+import com.kova700.zerotomvvm.view.main.MainActivity
 import kotlinx.coroutines.launch
 
 class WishFragment : Fragment() {

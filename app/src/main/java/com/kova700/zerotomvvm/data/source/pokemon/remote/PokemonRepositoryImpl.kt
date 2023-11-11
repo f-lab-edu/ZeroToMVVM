@@ -1,4 +1,7 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.source.pokemon.remote
+
+import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.source.pokemon.Pokemon
 
 class PokemonRepositoryImpl(
     private val pokemonService: PokemonApi

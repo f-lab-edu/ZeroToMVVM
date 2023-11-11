@@ -1,6 +1,9 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.source.pokemon.local
 
 import android.util.Log
+import com.kova700.zerotomvvm.data.source.pokemon.Pokemon
+import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
+import com.kova700.zerotomvvm.util.TAG
 import kotlin.random.Random
 
 fun getDummy(): MutableList<PokemonListItem> {
