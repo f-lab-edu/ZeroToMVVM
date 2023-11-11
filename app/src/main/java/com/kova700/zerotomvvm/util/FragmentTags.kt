@@ -1,7 +1,9 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.util
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.kova700.zerotomvvm.view.main.home.HomeFragment
+import com.kova700.zerotomvvm.view.main.wish.WishFragment
 
 enum class FragmentTags {
     HOME_FRAGMENT_TAG, WISH_FRAGMENT_TAG

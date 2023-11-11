@@ -1,4 +1,4 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.util
 
 import android.app.Activity
 import android.content.Intent

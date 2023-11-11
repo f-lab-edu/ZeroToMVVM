@@ -1,5 +1,6 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.api
 
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

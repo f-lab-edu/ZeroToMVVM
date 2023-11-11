@@ -1,6 +1,8 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.api
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.kova700.zerotomvvm.util.BASE_URL
+import com.kova700.zerotomvvm.util.JSON_MEDIA_TYPE
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

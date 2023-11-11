@@ -1,4 +1,6 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.source.pokemon.remote
+
+import com.kova700.zerotomvvm.data.source.pokemon.Pokemon
 
 interface PokemonRepository {
 

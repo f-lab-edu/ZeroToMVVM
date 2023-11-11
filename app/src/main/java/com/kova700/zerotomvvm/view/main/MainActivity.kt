@@ -1,11 +1,19 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.view.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.kova700.zerotomvvm.FragmentTags.HOME_FRAGMENT_TAG
-import com.kova700.zerotomvvm.FragmentTags.WISH_FRAGMENT_TAG
+import com.kova700.zerotomvvm.util.FragmentTags
+import com.kova700.zerotomvvm.util.FragmentTags.HOME_FRAGMENT_TAG
+import com.kova700.zerotomvvm.util.FragmentTags.WISH_FRAGMENT_TAG
+import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.R
+import com.kova700.zerotomvvm.data.source.pokemon.Pokemon
+import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.ActivityMainBinding
+import com.kova700.zerotomvvm.util.getFragmentInstanceByTag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first

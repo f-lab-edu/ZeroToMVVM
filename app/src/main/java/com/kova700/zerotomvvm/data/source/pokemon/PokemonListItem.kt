@@ -1,4 +1,4 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.source.pokemon
 
 import kotlinx.serialization.SerialName
 import java.io.Serializable
