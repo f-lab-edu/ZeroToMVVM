@@ -17,8 +17,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), MainContract.Vie
     private lateinit var binding: ActivityMainBinding
     val presenter: MainContract.Presenter by lazy {
         MainPresenter(
-            this@MainActivity,
-            PokemonRepositoryImpl(PokemonApi.service)
+            view = this@MainActivity,
+            repository = PokemonRepositoryImpl(PokemonApi.service)
         )
     }
 
