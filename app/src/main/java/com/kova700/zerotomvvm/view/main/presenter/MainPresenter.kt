@@ -28,7 +28,7 @@ class MainPresenter(
         }
     }
 
-    override fun deletePokemonItem(selectedItem: PokemonListItem) {
+    override fun deletePokemonInWishItem(selectedItem: PokemonListItem) {
         activity.lifecycleScope.launch {
             val currentList = repository.pokemonListFlow.first().toMutableList()
             currentList.forEachIndexed { index, pokemonListItem ->
