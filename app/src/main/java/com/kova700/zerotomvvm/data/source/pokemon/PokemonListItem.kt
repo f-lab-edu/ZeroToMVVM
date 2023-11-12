@@ -17,5 +17,5 @@ data class Pokemon(
 
 data class PokemonListItem(
     val pokemon: Pokemon,
-    val heart: Boolean
+    val heart: Boolean = false
 ) : Serializable
