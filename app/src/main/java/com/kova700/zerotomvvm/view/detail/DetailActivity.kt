@@ -1,17 +1,17 @@
 package com.kova700.zerotomvvm.view.detail
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
-import com.kova700.zerotomvvm.util.finishWithExtra
 import com.kova700.zerotomvvm.util.getIntExtraData
 import com.kova700.zerotomvvm.util.getSerializableExtraData
+import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
+import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
 
 class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     private lateinit var binding: ActivityDetailBinding
@@ -53,12 +53,16 @@ class DetailActivity : AppCompatActivity(R.layout.activity_detail) {
     }
 
     private fun finishActivity() {
-        intent.putExtra(TO_MAIN_HEART_BOOLEAN_EXTRA, pokemonListItem.heart)
-        intent.putExtra(
-            TO_MAIN_ITEM_POSITION_EXTRA,
-            intent.getIntExtraData(TO_DETAIL_ITEM_POSITION_EXTRA)
-        )
-        finishWithExtra()
+        val resultIntent = Intent().apply {
+            putExtra(TO_MAIN_HEART_BOOLEAN_EXTRA, pokemonListItem.heart)
+            putExtra(
+                TO_MAIN_ITEM_POSITION_EXTRA,
+                intent.getIntExtraData(TO_DETAIL_ITEM_POSITION_EXTRA)
+            )
+
+        }
+        setResult(RESULT_OK, resultIntent)
+        finish()
     }
 
     companion object {
