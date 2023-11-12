@@ -2,7 +2,6 @@ package com.kova700.zerotomvvm.view.main.home
 
 import android.app.Activity.RESULT_OK
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -11,29 +10,32 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyItem
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 import com.kova700.zerotomvvm.util.getBooleanExtraData
 import com.kova700.zerotomvvm.util.getIntExtraData
-import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
 import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.view.main.MainActivity
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
-import com.kova700.zerotomvvm.view.main.adapter.PokemonItemClickListener
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
-import kotlinx.coroutines.launch
+import com.kova700.zerotomvvm.view.main.home.presenter.HomeContract
+import com.kova700.zerotomvvm.view.main.home.presenter.HomePresenter
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), HomeContract.View {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    lateinit var homeAdapter: PokemonListAdapter
+    private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
     private lateinit var mainActivity: MainActivity
+
+    private val presenter by lazy {
+        HomePresenter(
+            view = this@HomeFragment,
+            adapterView = homeAdapter,
+            adapterModel = homeAdapter,
+        )
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -52,28 +54,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setPlusBtnClickListener()
-        initAdapter()
         initRecyclerView()
-        observePokemonList()
-    }
-
-    private fun observePokemonList() = lifecycleScope.launch {
-        mainActivity.presenter.observePokemonList {
-            homeAdapter.submitList(it)
-        }
+        presenter.observePokemonList()
     }
 
     private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener {
-            //TODO : Presenter로 이전 대상 1
-            val newList = homeAdapter.currentList.toMutableList().apply {
-                add(getRandomDummyItem(homeAdapter.currentList.size + 1))
-            }
-            mainActivity.presenter.updatePokemonList(newList)
-        }
+        binding.fabHomeFragment.setOnClickListener { presenter.addRandomItem() }
     }
 
-    private val activityResultLauncher =
+    val activityResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode != RESULT_OK) return@registerForActivityResult
 
@@ -84,31 +73,8 @@ class HomeFragment : Fragment() {
             val newList = homeAdapter.currentList.toMutableList().apply {
                 this[itemPosition] = this[itemPosition].copy(heart = heartValue)
             }
-            mainActivity.presenter.updatePokemonList(newList)
+            presenter.updatePokemonList(newList)
         }
-
-    //TODO : Presenter로 이전 대상 2
-    private fun initAdapter() {
-        val itemClickListener = object : PokemonItemClickListener {
-            override fun onItemClick(itemPosition: Int) {
-                val selectedItem = homeAdapter.currentList[itemPosition]
-                val intent = Intent(requireActivity(), DetailActivity::class.java).apply {
-                    putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-                    putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
-                }
-                activityResultLauncher.launch(intent)
-            }
-
-            override fun onHeartClick(itemPosition: Int) {
-                val newList = homeAdapter.currentList.toMutableList().apply {
-                    val selectedItem = this[itemPosition]
-                    this[itemPosition] = this[itemPosition].copy(heart = !selectedItem.heart)
-                }
-                mainActivity.presenter.updatePokemonList(newList)
-            }
-        }
-        homeAdapter = PokemonListAdapter(itemClickListener)
-    }
 
     private fun initRecyclerView() {
         binding.rcvHomeFragment.apply {

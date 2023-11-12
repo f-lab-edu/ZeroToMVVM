@@ -7,15 +7,16 @@ import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
 class PokemonListViewHolder(
     private val binding: ItemPokemonListBinding,
-    itemClickListener: PokemonItemClickListener
+    private val itemClickListener : ((Int) -> Unit)?,
+    private var heartClickListener : ((Int) -> Unit)?,
 ) : RecyclerView.ViewHolder(binding.root) {
 
     init {
-        binding.root.setOnClickListener {
-            itemClickListener.onItemClick(absoluteAdapterPosition)
+        binding.cvHomeItem.setOnClickListener {
+            itemClickListener?.invoke(absoluteAdapterPosition)
         }
         binding.tgWishHomeItem.setOnClickListener {
-            itemClickListener.onHeartClick(absoluteAdapterPosition)
+            heartClickListener?.invoke(absoluteAdapterPosition)
         }
     }
 
