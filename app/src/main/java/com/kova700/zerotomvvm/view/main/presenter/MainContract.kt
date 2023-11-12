@@ -7,7 +7,7 @@ interface MainContract {
     interface Presenter {
         fun loadPokemonList()
         fun updatePokemonList(newList : List<PokemonListItem>)
-        fun deletePokemonItem(selectedItem: PokemonListItem)
+        fun deletePokemonInWishItem(selectedItem: PokemonListItem)
         fun observePokemonList(callback: (List<PokemonListItem>) -> Unit)
         fun observeWishPokemonList(callback: (List<PokemonListItem>) -> Unit)
     }
