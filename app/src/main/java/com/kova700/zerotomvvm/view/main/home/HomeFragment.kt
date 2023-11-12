@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
@@ -27,7 +28,7 @@ class HomeFragment : Fragment(), HomeContract.View {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
-    private lateinit var mainActivity: MainActivity
+    private lateinit var activity: LifecycleOwner
 
     private val presenter by lazy {
         HomePresenter(
@@ -39,7 +40,7 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        mainActivity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
+        activity = requireActivity() as? MainActivity ?: throw Exception("Unknown Activity")
     }
 
     override fun onCreateView(

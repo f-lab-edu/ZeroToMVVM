@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
@@ -27,7 +28,7 @@ class WishFragment : Fragment(), WishContract.View {
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
     private val wishAdapter by lazy { PokemonListAdapter() }
-    private lateinit var mainActivity: MainActivity
+    private lateinit var mainActivity: LifecycleOwner
 
     private val presenter by lazy {
         WishPresenter(
