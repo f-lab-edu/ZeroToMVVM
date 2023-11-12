@@ -2,32 +2,25 @@ package com.kova700.zerotomvvm.view.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import com.kova700.zerotomvvm.R
+import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
+import com.kova700.zerotomvvm.databinding.ActivityMainBinding
 import com.kova700.zerotomvvm.util.FragmentTags
 import com.kova700.zerotomvvm.util.FragmentTags.HOME_FRAGMENT_TAG
 import com.kova700.zerotomvvm.util.FragmentTags.WISH_FRAGMENT_TAG
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.source.pokemon.Pokemon
-import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
-import com.kova700.zerotomvvm.databinding.ActivityMainBinding
 import com.kova700.zerotomvvm.util.getFragmentInstanceByTag
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import com.kova700.zerotomvvm.view.main.presenter.MainContract
+import com.kova700.zerotomvvm.view.main.presenter.MainPresenter
 
-class MainActivity : AppCompatActivity(R.layout.activity_main) {
+class MainActivity : AppCompatActivity(R.layout.activity_main), MainContract.View {
     private lateinit var binding: ActivityMainBinding
-
-    private val pokemonRepository: PokemonRepository by lazy { PokemonRepositoryImpl(PokemonApi.service) }
-
-    val pokeymonListFlow: MutableStateFlow<List<PokemonListItem>> = MutableStateFlow(listOf())
-    val wishPokeymonListFlow: Flow<List<PokemonListItem>>
-        get() = pokeymonListFlow.map { list -> list.filter { it.heart } }
+    val presenter: MainContract.Presenter by lazy {
+        MainPresenter(
+            this@MainActivity,
+            PokemonRepositoryImpl(PokemonApi.service)
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,27 +28,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         setContentView(binding.root)
         initFragmentContainer(savedInstanceState)
         initBottomNavigationView()
-        getRemotePokemonList()
-    }
-
-    //TODO :예외처리 추가
-    private fun getRemotePokemonList() = lifecycleScope.launch {
-        val data = pokemonRepository.getPokemonList()
-            .map { pokemon: Pokemon -> PokemonListItem(pokemon, false) }
-        pokeymonListFlow.emit(data)
-    }
-
-    fun updatePokemonList(data: List<PokemonListItem>) = lifecycleScope.launch {
-        pokeymonListFlow.emit(data)
-    }
-
-    fun deletePokemonItem(selectedItem: PokemonListItem) = lifecycleScope.launch {
-        val currentList = pokeymonListFlow.first().toMutableList()
-        currentList.forEachIndexed { index, pokemonListItem ->
-            if (pokemonListItem.pokemon.name != selectedItem.pokemon.name) return@forEachIndexed
-            currentList[index] = selectedItem.copy(heart = false)
-        }
-        pokeymonListFlow.emit(currentList)
+        presenter.loadPokemonList()
     }
 
     private fun initBottomNavigationView() {
