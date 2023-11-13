@@ -1,15 +1,12 @@
-package com.kova700.zerotomvvm
+package com.kova700.zerotomvvm.data.source.pokemon
 
+import kotlinx.serialization.SerialName
 import java.io.Serializable
 
-data class PokemonListItem(
-    val pokemon: Pokemon,
-    var heart: Boolean
-) : Serializable
-
+@kotlinx.serialization.Serializable
 data class Pokemon(
-    val name: String,
-    val detailInfoUrl: String
+    @SerialName("name") val name: String,
+    @SerialName("url") val detailInfoUrl: String
 ) : Serializable {
     fun getImageUrl(): String {
         val index = detailInfoUrl.split("/".toRegex()).dropLast(1).last()
@@ -17,3 +14,8 @@ data class Pokemon(
                 "pokemon/other/official-artwork/$index.png"
     }
 }
+
+data class PokemonListItem(
+    val pokemon: Pokemon,
+    val heart: Boolean = false
+) : Serializable
