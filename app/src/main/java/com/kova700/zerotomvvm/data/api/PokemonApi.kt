@@ -11,7 +11,7 @@ interface PokemonApi {
     suspend fun getPokemon(
         @Query("limit") size: Int,
         @Query("offset") offset: Int,
-    ): Response<PokemonResponse>
+    ): PokemonResponse
 
     companion object {
         val service: PokemonApi by lazy { RetrofitBuilder.retrofit.create(PokemonApi::class.java) }
