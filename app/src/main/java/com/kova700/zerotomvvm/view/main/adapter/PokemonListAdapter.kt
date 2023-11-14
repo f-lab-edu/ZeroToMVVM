@@ -30,12 +30,4 @@ class PokemonListAdapter() :
     override fun submitItemList(list: List<PokemonListItem>) {
         super.submitList(list)
     }
-
-    override fun addRandomItem() {
-        val newList = currentList.toMutableList().apply {
-            add(getRandomDummyItem(currentList.size + 1))
-        }
-        super.submitList(newList)
-    }
-
 }
