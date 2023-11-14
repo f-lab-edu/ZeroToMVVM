@@ -3,24 +3,14 @@ package com.kova700.zerotomvvm.view.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.ActivityMainBinding
 import com.kova700.zerotomvvm.util.FragmentTags
 import com.kova700.zerotomvvm.util.FragmentTags.HOME_FRAGMENT_TAG
 import com.kova700.zerotomvvm.util.FragmentTags.WISH_FRAGMENT_TAG
 import com.kova700.zerotomvvm.util.getFragmentInstanceByTag
-import com.kova700.zerotomvvm.view.main.presenter.MainContract
-import com.kova700.zerotomvvm.view.main.presenter.MainPresenter
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), MainContract.View {
+class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private lateinit var binding: ActivityMainBinding
-    val presenter: MainContract.Presenter by lazy {
-        MainPresenter(
-            view = this@MainActivity,
-            repository = PokemonRepositoryImpl(PokemonApi.service)
-        )
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +18,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), MainContract.Vie
         setContentView(binding.root)
         initFragmentContainer(savedInstanceState)
         initBottomNavigationView()
-        presenter.loadPokemonList()
     }
 
     private fun initBottomNavigationView() {
