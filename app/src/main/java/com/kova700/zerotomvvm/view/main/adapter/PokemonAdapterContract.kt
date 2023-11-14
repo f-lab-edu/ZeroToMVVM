@@ -11,6 +11,5 @@ interface PokemonAdapterContract {
     interface Model {
         fun getCurrentList(): List<PokemonListItem>
         fun submitItemList(list: List<PokemonListItem>)
-        fun addRandomItem()
     }
 }
