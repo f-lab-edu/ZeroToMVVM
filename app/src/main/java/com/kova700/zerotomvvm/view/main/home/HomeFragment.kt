@@ -38,7 +38,7 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     private val presenter by lazy {
         HomePresenter(
-            view = this@HomeFragment,
+            view = this,
             adapterView = homeAdapter,
             adapterModel = homeAdapter,
             repository = PokemonRepositoryImpl.getInstance(PokemonApi.service)
