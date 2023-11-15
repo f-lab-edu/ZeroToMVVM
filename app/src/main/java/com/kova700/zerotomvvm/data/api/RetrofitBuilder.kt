@@ -11,11 +11,13 @@ import retrofit2.Retrofit
 
 object RetrofitBuilder {
 
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(getHttpClient())
-        .addConverterFactory(Json.asConverterFactory(JSON_MEDIA_TYPE.toMediaType()))
-        .build()
+    val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(getHttpClient())
+            .addConverterFactory(Json.asConverterFactory(JSON_MEDIA_TYPE.toMediaType()))
+            .build()
+    }
 
     private fun getHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
