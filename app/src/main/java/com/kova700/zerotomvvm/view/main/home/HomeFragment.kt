@@ -104,6 +104,14 @@ class HomeFragment : Fragment(), HomeContract.View {
         Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
     }
 
+    override fun showLoading() {
+        binding.pbHomeFragment.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        binding.pbHomeFragment.visibility = View.GONE
+    }
+
     companion object {
         private const val HOME_RCV_STATE_KEY = "HOME_RCV_STATE_KEY"
 
