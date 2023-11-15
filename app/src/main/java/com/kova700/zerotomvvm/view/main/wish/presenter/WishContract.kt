@@ -4,12 +4,12 @@ import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 
 interface WishContract {
     interface View {
-        fun moveToDetail(itemPosition: Int, selectedItem: PokemonListItem)
+        fun moveToDetail(selectedItem: PokemonListItem)
     }
 
     interface Presenter {
         fun loadWishPokemonList()
-        fun deleteInWishPosition(itemPosition: Int)
         fun updatePokemonList(newList: List<PokemonListItem>)
+        fun renewPokemonList()
     }
 }

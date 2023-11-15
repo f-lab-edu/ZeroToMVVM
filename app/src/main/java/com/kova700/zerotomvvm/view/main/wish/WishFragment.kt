@@ -1,13 +1,11 @@
 package com.kova700.zerotomvvm.view.main.wish
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -16,11 +14,7 @@ import com.kova700.zerotomvvm.data.api.PokemonApi
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
-import com.kova700.zerotomvvm.util.getBooleanExtraData
-import com.kova700.zerotomvvm.util.getIntExtraData
 import com.kova700.zerotomvvm.view.detail.DetailActivity
-import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
-import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import com.kova700.zerotomvvm.view.main.wish.presenter.WishContract
@@ -53,24 +47,13 @@ class WishFragment : Fragment(), WishContract.View {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
-        loadWishPokemonList()
-    }
-
-    private fun loadWishPokemonList() {
         presenter.loadWishPokemonList()
     }
 
-    //TODO : 굳이 이걸로 데이터를 주고 받을 필요가 있을까? (바로 Repository 반영해보자)
-    private val activityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-
-            val intent = result.data ?: throw Exception("DetailActivity result is not exist")
-            val heartValue = intent.getBooleanExtraData(TO_MAIN_HEART_BOOLEAN_EXTRA)
-            val itemPosition = intent.getIntExtraData(TO_MAIN_ITEM_POSITION_EXTRA)
-            if (heartValue) return@registerForActivityResult
-            presenter.deleteInWishPosition(itemPosition)
-        }
+    override fun onResume() {
+        super.onResume()
+        presenter.renewPokemonList()
+    }
 
     private fun initRecyclerView() {
         binding.rcvWishFragment.apply {
@@ -96,13 +79,11 @@ class WishFragment : Fragment(), WishContract.View {
         _binding = null
     }
 
-    //TODO : itemPosition만 넘겨주고, 내부에서 Repository 접근해서 Item가져오는 방법으로 가보자.
-    override fun moveToDetail(itemPosition: Int, selectedItem: PokemonListItem) {
+    override fun moveToDetail(selectedItem: PokemonListItem) {
         val intent = Intent(activity, DetailActivity::class.java).apply {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-            putExtra(MainActivity.TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
         }
-        activityResultLauncher.launch(intent)
+        startActivity(intent)
     }
 
     companion object {

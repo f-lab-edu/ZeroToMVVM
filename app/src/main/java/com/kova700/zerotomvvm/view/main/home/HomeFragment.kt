@@ -1,6 +1,5 @@
 package com.kova700.zerotomvvm.view.main.home
 
-import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
@@ -8,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -18,11 +16,7 @@ import com.kova700.zerotomvvm.data.api.PokemonApi
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
-import com.kova700.zerotomvvm.util.getBooleanExtraData
-import com.kova700.zerotomvvm.util.getIntExtraData
 import com.kova700.zerotomvvm.view.detail.DetailActivity
-import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_HEART_BOOLEAN_EXTRA
-import com.kova700.zerotomvvm.view.detail.DetailActivity.Companion.TO_MAIN_ITEM_POSITION_EXTRA
 import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import com.kova700.zerotomvvm.view.main.home.presenter.HomeContract
@@ -61,6 +55,11 @@ class HomeFragment : Fragment(), HomeContract.View {
         loadPokemonList()
     }
 
+    override fun onResume() {
+        super.onResume()
+        presenter.renewPokemonList()
+    }
+
     private fun loadPokemonList() {
         viewLifecycleOwner.lifecycleScope.launch {
             presenter.loadPokemonList()
@@ -70,17 +69,6 @@ class HomeFragment : Fragment(), HomeContract.View {
     private fun setPlusBtnClickListener() {
         binding.fabHomeFragment.setOnClickListener { presenter.addRandomItem() }
     }
-
-    //TODO : 굳이 이걸로 데이터를 주고 받을 필요가 있을까? (바로 Repository 반영해보자)
-    private val activityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode != RESULT_OK) return@registerForActivityResult
-
-            val intent = result.data ?: throw Exception("DetailActivity result is not exist")
-            val heartValue = intent.getBooleanExtraData(TO_MAIN_HEART_BOOLEAN_EXTRA)
-            val itemPosition = intent.getIntExtraData(TO_MAIN_ITEM_POSITION_EXTRA)
-            presenter.updateHeartInPosition(itemPosition, heartValue)
-        }
 
     private fun initRecyclerView() {
         binding.rcvHomeFragment.apply {
@@ -102,16 +90,14 @@ class HomeFragment : Fragment(), HomeContract.View {
     override fun onDestroyView() {
         super.onDestroyView()
         rcvState = binding.rcvHomeFragment.layoutManager?.onSaveInstanceState()
-        _binding = null //쓰지 않을 bindingView를 가지고 있을 이유가 없음으로 메모리 반환
+        _binding = null
     }
 
-
-    override fun moveToDetail(itemPosition: Int, selectedItem: PokemonListItem) {
+    override fun moveToDetail(selectedItem: PokemonListItem) {
         val intent = Intent(activity, DetailActivity::class.java).apply {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-            putExtra(MainActivity.TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
         }
-        activityResultLauncher.launch(intent)
+        startActivity(intent)
     }
 
     override fun showToast(message: String) {

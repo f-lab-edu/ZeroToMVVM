@@ -1,6 +1,5 @@
 package com.kova700.zerotomvvm.view.main.home.presenter
 
-import android.content.ClipData.Item
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
@@ -37,11 +36,8 @@ class HomePresenter(
         updatePokemonList(newList)
     }
 
-    override fun updateHeartInPosition(itemPosition: Int, heartValue: Boolean) {
-        val newList = adapterModel.getCurrentList().toMutableList().apply {
-            this[itemPosition] = this[itemPosition].copy(heart = heartValue)
-        }
-        updatePokemonList(newList)
+    override fun renewPokemonList() {
+        adapterModel.submitItemList(repository.pokemonList)
     }
 
     override fun updatePokemonList(newList: List<PokemonListItem>) {
@@ -58,6 +54,6 @@ class HomePresenter(
     }
 
     private fun itemClickListener(itemPosition: Int) {
-        view.moveToDetail(itemPosition, adapterModel.getCurrentList()[itemPosition])
+        view.moveToDetail(adapterModel.getCurrentList()[itemPosition])
     }
 }

@@ -25,29 +25,29 @@ class WishPresenter(
         adapterModel.submitItemList(repository.wishPokemonList)
     }
 
-    override fun deleteInWishPosition(itemPosition: Int) {
+    override fun updatePokemonList(newList: List<PokemonListItem>) {
+        repository.pokemonList = newList
+        adapterModel.submitItemList(repository.wishPokemonList)
+    }
+
+    override fun renewPokemonList() {
+        adapterModel.submitItemList(repository.wishPokemonList)
+    }
+
+    private fun itemClickListener(itemPosition: Int) {
+        view.moveToDetail(adapterModel.getCurrentList()[itemPosition])
+    }
+
+    private fun heartClickListener(itemPosition: Int) {
         val selectedItem = adapterModel.getCurrentList()[itemPosition]
+        if (selectedItem.heart.not()) return
+
         val newList = repository.pokemonList.toMutableList()
         newList.forEachIndexed { index, pokemonListItem ->
             if (pokemonListItem.pokemon.name != selectedItem.pokemon.name) return@forEachIndexed
             newList[index] = selectedItem.copy(heart = false)
         }
         updatePokemonList(newList)
-    }
-
-    override fun updatePokemonList(newList: List<PokemonListItem>) {
-        repository.pokemonList = newList
-        adapterModel.submitItemList(repository.wishPokemonList)
-    }
-
-    private fun itemClickListener(itemPosition: Int) {
-        view.moveToDetail(itemPosition, adapterModel.getCurrentList()[itemPosition])
-    }
-
-    private fun heartClickListener(itemPosition: Int) {
-        val selectedItem = adapterModel.getCurrentList()[itemPosition]
-        if (selectedItem.heart.not()) return
-        deleteInWishPosition(itemPosition)
     }
 
 }
