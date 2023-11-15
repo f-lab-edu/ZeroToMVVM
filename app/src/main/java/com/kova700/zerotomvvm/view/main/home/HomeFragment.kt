@@ -2,12 +2,10 @@ package com.kova700.zerotomvvm.view.main.home
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -82,14 +80,12 @@ class HomeFragment : Fragment(), HomeContract.View {
                         }
                     }
                 }
-                onRestoreInstanceState(arguments?.getParcelable(HOME_RCV_STATE_KEY))
             }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        rcvState = binding.rcvHomeFragment.layoutManager?.onSaveInstanceState()
         _binding = null
     }
 
@@ -110,18 +106,5 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     override fun hideLoading() {
         binding.pbHomeFragment.visibility = View.GONE
-    }
-
-    companion object {
-        private const val HOME_RCV_STATE_KEY = "HOME_RCV_STATE_KEY"
-
-        //ViewModel이나 Activity의 생명주기에 따라 삭제되는 곳으로 이전하는 게 좋아 보임 (메모리가 계속 남아있을테니)
-        var rcvState: Parcelable? = null
-
-        fun newInstance(): HomeFragment {
-            return HomeFragment().apply {
-                arguments = bundleOf(HOME_RCV_STATE_KEY to rcvState)
-            }
-        }
     }
 }

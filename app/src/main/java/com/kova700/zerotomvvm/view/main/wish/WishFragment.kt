@@ -2,11 +2,9 @@ package com.kova700.zerotomvvm.view.main.wish
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
@@ -68,14 +66,12 @@ class WishFragment : Fragment(), WishContract.View {
                             }
                         }
                     }
-                    onRestoreInstanceState(arguments?.getParcelable(WISH_RCV_STATE_KEY))
                 }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        rcvState = binding.rcvWishFragment.layoutManager?.onSaveInstanceState()
         _binding = null
     }
 
@@ -84,18 +80,5 @@ class WishFragment : Fragment(), WishContract.View {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
         }
         startActivity(intent)
-    }
-
-    companion object {
-        private const val WISH_RCV_STATE_KEY = "WISH_RCV_STATE_KEY"
-
-        //ViewModel이나 Activity의 생명주기에 따라 삭제되는 곳으로 이전하는 게 좋아 보임 (메모리가 계속 남아있을테니)
-        var rcvState: Parcelable? = null
-
-        fun newInstance(): WishFragment {
-            return WishFragment().apply {
-                arguments = bundleOf(WISH_RCV_STATE_KEY to rcvState)
-            }
-        }
     }
 }
