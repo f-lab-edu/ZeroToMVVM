@@ -6,6 +6,8 @@ interface HomeContract {
     interface View {
         fun moveToDetail(selectedItem: PokemonListItem)
         fun showToast(message: String)
+        fun showLoading()
+        fun hideLoading()
     }
 
     interface Presenter {

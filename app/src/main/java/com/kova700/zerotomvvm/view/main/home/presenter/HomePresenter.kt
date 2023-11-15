@@ -20,13 +20,14 @@ class HomePresenter(
         adapterView.onHeartClick = { itemPosition ->
             heartClickListener(itemPosition)
         }
+        view.showLoading()
     }
 
-    //TODO : 로딩 상태 추가,
     override suspend fun loadPokemonList() {
         runCatching { repository.loadPokemonList() }
             .onSuccess { adapterModel.submitItemList(it) }
             .onFailure { view.showToast("data load를 실패했습니다. : ${it.message}") }
+            .also { view.hideLoading() }
     }
 
     override fun addRandomItem() {
