@@ -34,7 +34,7 @@ class WishFragment : Fragment(), WishContract.View {
 
     private val presenter by lazy {
         WishPresenter(
-            view = this@WishFragment,
+            view = this,
             adapterView = wishAdapter,
             adapterModel = wishAdapter,
             repository = PokemonRepositoryImpl.getInstance(PokemonApi.service)
