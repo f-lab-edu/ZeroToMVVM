@@ -8,12 +8,12 @@ class DetailPresenter(
     val repository: PokemonRepository
 ) : DetailContract.Presenter {
 
-    override fun updateItemData(pokemon: PokemonListItem) {
+    override fun updateItemData(newItem: PokemonListItem) {
         val newList = repository.pokemonList.toMutableList()
-        newList.forEachIndexed { index, pokemonListItem ->
-            if (pokemonListItem.pokemon.name != pokemon.pokemon.name) return@forEachIndexed
-            newList[index] = pokemon
-        }
+        val index = newList.indexOfFirst { it.pokemon.name == newItem.pokemon.name }
+        if (index == -1) return
+
+        newList[index] = newItem
         repository.pokemonList = newList
     }
 
