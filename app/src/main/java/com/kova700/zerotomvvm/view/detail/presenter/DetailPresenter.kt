@@ -10,7 +10,7 @@ class DetailPresenter(
 
     override fun updateItemData(newItem: PokemonListItem) {
         val newList = repository.pokemonList.toMutableList()
-        val index = newItem.pokemon.pokemonNum() -1
+        val index = newItem.pokemon.getPokemonNum() -1
         newList[index] = newItem
         repository.pokemonList = newList
     }
