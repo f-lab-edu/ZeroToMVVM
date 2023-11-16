@@ -1,24 +1,16 @@
 package com.kova700.zerotomvvm.view.main.home.presenter
 
-import android.content.Intent
-import androidx.lifecycle.lifecycleScope
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.view.detail.DetailActivity
-import com.kova700.zerotomvvm.view.main.MainActivity
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_ITEM_POSITION_EXTRA
-import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyItem
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.view.main.adapter.PokemonAdapterContract
-import com.kova700.zerotomvvm.view.main.home.HomeFragment
-import kotlinx.coroutines.launch
 
 class HomePresenter(
     private val view: HomeContract.View,
     private val adapterView: PokemonAdapterContract.View,
     private val adapterModel: PokemonAdapterContract.Model,
+    private val repository: PokemonRepository
 ) : HomeContract.Presenter {
-
-    private val fragment = view as HomeFragment
-    private val activity = fragment.requireActivity() as MainActivity
 
     init {
         adapterView.onItemClick = { itemPosition ->
@@ -28,39 +20,41 @@ class HomePresenter(
         adapterView.onHeartClick = { itemPosition ->
             heartClickListener(itemPosition)
         }
+        view.showLoading()
     }
 
-    override fun observePokemonList() {
-        fragment.viewLifecycleOwner.lifecycleScope.launch {
-            activity.presenter.observePokemonList {
-                adapterModel.submitItemList(it)
-            }
-        }
+    override suspend fun loadPokemonList() {
+        runCatching { repository.loadPokemonList() }
+            .onSuccess { adapterModel.submitItemList(it) }
+            .onFailure { view.showToast("data load를 실패했습니다. : ${it.message}") }
+            .also { view.hideLoading() }
     }
 
-    override fun updatePokemonList(newList: List<PokemonListItem>) {
-        activity.presenter.updatePokemonList(newList)
-    }
-
-    override fun heartClickListener(itemPosition: Int) {
+    override fun addRandomItem() {
         val newList = adapterModel.getCurrentList().toMutableList().apply {
-            val selectedItem = this[itemPosition]
-            this[itemPosition] = this[itemPosition].copy(heart = !selectedItem.heart)
+            add(getRandomDummyItem(adapterModel.getCurrentList().size + 1))
         }
         updatePokemonList(newList)
     }
 
-    override fun itemClickListener(itemPosition: Int) {
-        val selectedItem = adapterModel.getCurrentList()[itemPosition]
-        val intent = Intent(activity, DetailActivity::class.java).apply {
-            putExtra(TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-            putExtra(TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
+    override fun renewPokemonList() {
+        adapterModel.submitItemList(repository.pokemonList)
+    }
+
+    override fun updatePokemonList(newList: List<PokemonListItem>) {
+        repository.pokemonList = newList
+        adapterModel.submitItemList(newList)
+    }
+
+    private fun heartClickListener(itemPosition: Int) {
+        val newList = adapterModel.getCurrentList().toMutableList().apply {
+            val selectedItem = this[itemPosition]
+            this[itemPosition] = this[itemPosition].copy(heart = selectedItem.heart.not())
         }
-        fragment.activityResultLauncher.launch(intent)
+        updatePokemonList(newList)
     }
 
-    override fun addRandomItem() {
-        adapterModel.addRandomItem()
+    private fun itemClickListener(itemPosition: Int) {
+        view.moveToDetail(adapterModel.getCurrentList()[itemPosition])
     }
-
 }

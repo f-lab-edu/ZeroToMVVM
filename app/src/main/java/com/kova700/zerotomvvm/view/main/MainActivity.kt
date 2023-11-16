@@ -2,61 +2,49 @@ package com.kova700.zerotomvvm.view.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.ActivityMainBinding
-import com.kova700.zerotomvvm.util.FragmentTags
-import com.kova700.zerotomvvm.util.FragmentTags.HOME_FRAGMENT_TAG
-import com.kova700.zerotomvvm.util.FragmentTags.WISH_FRAGMENT_TAG
-import com.kova700.zerotomvvm.util.getFragmentInstanceByTag
-import com.kova700.zerotomvvm.view.main.presenter.MainContract
-import com.kova700.zerotomvvm.view.main.presenter.MainPresenter
+import com.kova700.zerotomvvm.view.main.home.HomeFragment
+import com.kova700.zerotomvvm.view.main.wish.WishFragment
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), MainContract.View {
+class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private lateinit var binding: ActivityMainBinding
-    val presenter: MainContract.Presenter by lazy {
-        MainPresenter(
-            view = this@MainActivity,
-            repository = PokemonRepositoryImpl(PokemonApi.service)
-        )
-    }
+
+    private val homeFragment by lazy { HomeFragment() }
+    private val wishFragment by lazy { WishFragment() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        initFragmentContainer(savedInstanceState)
+        initFragmentContainer(savedInstanceState, homeFragment)
         initBottomNavigationView()
-        presenter.loadPokemonList()
     }
 
     private fun initBottomNavigationView() {
         binding.bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.bottom_menu_home -> showFragment(HOME_FRAGMENT_TAG)
-                R.id.bottom_menu_wish -> showFragment(WISH_FRAGMENT_TAG)
+                R.id.bottom_menu_home -> showFragment(homeFragment)
+                R.id.bottom_menu_wish -> showFragment(wishFragment)
             }
             true
         }
     }
 
-    private fun initFragmentContainer(savedInstanceState: Bundle?) {
+    private fun initFragmentContainer(savedInstanceState: Bundle?, firstFragment: Fragment) {
         if (savedInstanceState != null) return
-        showFragment(HOME_FRAGMENT_TAG)
+        showFragment(firstFragment)
     }
 
-    private fun showFragment(tag: FragmentTags) {
-        val targetFragment = getFragmentInstanceByTag(tag)
-
+    private fun showFragment(targetFragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .setReorderingAllowed(true)
-            .replace(R.id.container_main, targetFragment, tag.name)
+            .replace(R.id.container_main, targetFragment)
             .commitNow()
     }
 
     companion object {
         const val TO_DETAIL_SELECTED_ITEM_EXTRA = "TO_DETAIL_SELECTED_ITEM_EXTRA"
-        const val TO_DETAIL_ITEM_POSITION_EXTRA = "TO_DETAIL_ITEM_POSITION_EXTRA"
     }
 }

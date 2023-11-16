@@ -1,16 +1,14 @@
 package com.kova700.zerotomvvm.view.main.wish.presenter
 
-import android.content.Intent
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.view.detail.DetailActivity
-import com.kova700.zerotomvvm.view.main.MainActivity
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.view.main.adapter.PokemonAdapterContract
-import com.kova700.zerotomvvm.view.main.wish.WishFragment
 
 class WishPresenter(
     private val view: WishContract.View,
     private val adapterView: PokemonAdapterContract.View,
     private val adapterModel: PokemonAdapterContract.Model,
+    private val repository: PokemonRepository
 ) : WishContract.Presenter {
 
     init {
@@ -23,31 +21,33 @@ class WishPresenter(
         }
     }
 
-    private val fragment = view as WishFragment
-    private val activity = fragment.requireActivity() as MainActivity
-
-    override fun observeWishPokemonList() {
-        activity.presenter.observeWishPokemonList {
-            adapterModel.submitItemList(it)
-        }
+    override fun loadWishPokemonList() {
+        adapterModel.submitItemList(repository.wishPokemonList)
     }
 
-    override fun deletePokemonInWishItem(selectedItem: PokemonListItem) {
-        activity.presenter.deletePokemonInWishItem(selectedItem)
+    override fun updatePokemonList(newList: List<PokemonListItem>) {
+        repository.pokemonList = newList
+        adapterModel.submitItemList(repository.wishPokemonList)
     }
 
-    override fun itemClickListener(itemPosition: Int) {
+    override fun renewPokemonList() {
+        adapterModel.submitItemList(repository.wishPokemonList)
+    }
+
+    private fun itemClickListener(itemPosition: Int) {
+        view.moveToDetail(adapterModel.getCurrentList()[itemPosition])
+    }
+
+    private fun heartClickListener(itemPosition: Int) {
         val selectedItem = adapterModel.getCurrentList()[itemPosition]
-        val intent = Intent(activity, DetailActivity::class.java).apply {
-            putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-            putExtra(MainActivity.TO_DETAIL_ITEM_POSITION_EXTRA, itemPosition)
-        }
-        fragment.activityResultLauncher.launch(intent)
-    }
+        if (selectedItem.heart.not()) return
 
-    override fun heartClickListener(itemPosition: Int) {
-        val selectedItem = adapterModel.getCurrentList()[itemPosition]
-        if (selectedItem.heart) deletePokemonInWishItem(selectedItem)
+        val newList = repository.pokemonList.toMutableList()
+        newList.forEachIndexed { index, pokemonListItem ->
+            if (pokemonListItem.pokemon.name != selectedItem.pokemon.name) return@forEachIndexed
+            newList[index] = selectedItem.copy(heart = false)
+        }
+        updatePokemonList(newList)
     }
 
 }
