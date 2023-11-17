@@ -26,16 +26,18 @@ class HomePresenter(
     override suspend fun loadRemotePokemonList() {
         runCatching { repository.loadRemotePokemonList() }
             .onSuccess { adapterModel.submitItemList(it) }
-            .onFailure {
-                loadLocalPokemonList()
-                view.showToast("서버로부터 데이터 load를 실패했습니다. : ${it.message}")
-            }
+            .onFailure { loadRemotePokemonListFailCallback(it) }
             .also { view.hideLoading() }
     }
 
     override suspend fun loadLocalPokemonList() {
         runCatching { repository.loadLocalPokemonList() }
             .onSuccess { adapterModel.submitItemList(it) }
+    }
+
+    private suspend fun loadRemotePokemonListFailCallback(throwable: Throwable) {
+        loadLocalPokemonList()
+        view.showToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}")
     }
 
     override fun addRandomItem() {
