@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
@@ -19,7 +20,10 @@ class DetailActivity : AppCompatActivity(), DetailContract.View {
     private val presenter by lazy {
         DetailPresenter(
             view = this,
-            repository = PokemonRepositoryImpl.getInstance(PokemonApi.service)
+            repository = PokemonRepositoryImpl.getInstance(
+                PokemonApi.service,
+                AppDataBase.service
+            )
         )
     }
 

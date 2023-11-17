@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
@@ -33,7 +34,10 @@ class HomeFragment : Fragment(), HomeContract.View {
             view = this,
             adapterView = homeAdapter,
             adapterModel = homeAdapter,
-            repository = PokemonRepositoryImpl.getInstance(PokemonApi.service)
+            repository = PokemonRepositoryImpl.getInstance(
+                PokemonApi.service,
+                AppDataBase.service
+            )
         )
     }
 
@@ -60,7 +64,7 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     private fun loadPokemonList() {
         viewLifecycleOwner.lifecycleScope.launch {
-            presenter.loadPokemonList()
+            presenter.loadRemotePokemonList()
         }
     }
 

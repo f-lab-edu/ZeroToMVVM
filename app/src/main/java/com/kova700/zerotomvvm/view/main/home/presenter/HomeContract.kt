@@ -11,7 +11,8 @@ interface HomeContract {
     }
 
     interface Presenter {
-        suspend fun loadPokemonList()
+        suspend fun loadRemotePokemonList()
+        suspend fun loadLocalPokemonList()
         fun addRandomItem()
         fun updatePokemonList(newList: List<PokemonListItem>)
         fun renewPokemonList()

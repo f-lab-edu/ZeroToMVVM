@@ -23,11 +23,19 @@ class HomePresenter(
         view.showLoading()
     }
 
-    override suspend fun loadPokemonList() {
-        runCatching { repository.loadPokemonList() }
+    override suspend fun loadRemotePokemonList() {
+        runCatching { repository.loadRemotePokemonList() }
             .onSuccess { adapterModel.submitItemList(it) }
-            .onFailure { view.showToast("data load를 실패했습니다. : ${it.message}") }
+            .onFailure {
+                loadLocalPokemonList()
+                view.showToast("서버로부터 데이터 load를 실패했습니다. : ${it.message}")
+            }
             .also { view.hideLoading() }
+    }
+
+    override suspend fun loadLocalPokemonList() {
+        runCatching { repository.loadLocalPokemonList() }
+            .onSuccess { adapterModel.submitItemList(it) }
     }
 
     override fun addRandomItem() {
