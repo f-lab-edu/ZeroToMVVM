@@ -9,16 +9,16 @@ class DetailPresenter(
     val repository: PokemonRepository
 ) : DetailContract.Presenter {
 
-    override suspend fun updateItemData(selectedItem: PokemonListItem) {
-        repository.updatePokemonHeart(
-            selectedItem.pokemon.getPokemonNum(),
-            selectedItem.heart.not()
-        )
+    override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
+        repository.updatePokemonHeart(targetPokemonNum, heartValue)
     }
 
     fun heartClickListener(selectedItem: PokemonListItem) {
         view.lifecycleScope.launch {
-            updateItemData(selectedItem)
+            updatePokemonHeart(
+                selectedItem.pokemon.getPokemonNum(),
+                selectedItem.heart.not()
+            )
         }
     }
 
