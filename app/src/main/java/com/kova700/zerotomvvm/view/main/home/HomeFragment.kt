@@ -20,12 +20,16 @@ import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import com.kova700.zerotomvvm.view.main.home.presenter.HomeContract
 import com.kova700.zerotomvvm.view.main.home.presenter.HomePresenter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), HomeContract.View {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    override val viewLifecycleScope: CoroutineScope
+        get() = viewLifecycleOwner.lifecycleScope
 
     private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
 
@@ -54,22 +58,24 @@ class HomeFragment : Fragment(), HomeContract.View {
         super.onViewCreated(view, savedInstanceState)
         setPlusBtnClickListener()
         initRecyclerView()
-        loadPokemonList()
+        loadRemotePokemonList()
     }
 
     override fun onResume() {
         super.onResume()
-        presenter.renewPokemonList()
+        loadLocalPokemonList()
     }
 
-    private fun loadPokemonList() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            presenter.loadRemotePokemonList()
-        }
+    private fun loadRemotePokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+        presenter.loadRemotePokemonList()
+    }
+
+    private fun loadLocalPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+        presenter.loadLocalPokemonList()
     }
 
     private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener { presenter.addRandomItem() }
+        binding.fabHomeFragment.setOnClickListener { presenter.plusBtnClickListener() }
     }
 
     private fun initRecyclerView() {

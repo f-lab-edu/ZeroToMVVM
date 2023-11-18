@@ -8,17 +8,20 @@ import androidx.room.Query
 @Dao
 interface PokemonDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPokemonList(pokemonList: List<PokemonEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPokemon(pokemon: PokemonEntity)
 
     @Query(
         "SELECT * FROM PokemonEntity " +
-                "WHERE num >= :startNum " +
+                "WHERE num >= :offset " +
                 "LIMIT :limit "
     )
     suspend fun getPokemonList(
-        startNum: Int,
-        limit: Int = 20
+        limit: Int,
+        offset: Int
     ): List<PokemonEntity>
 
     @Query(

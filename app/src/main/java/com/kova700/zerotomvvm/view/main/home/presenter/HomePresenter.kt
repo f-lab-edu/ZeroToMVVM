@@ -1,9 +1,10 @@
 package com.kova700.zerotomvvm.view.main.home.presenter
 
-import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyItem
+import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
+import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.view.main.adapter.PokemonAdapterContract
+import kotlinx.coroutines.launch
 
 class HomePresenter(
     private val view: HomeContract.View,
@@ -35,33 +36,37 @@ class HomePresenter(
             .onSuccess { adapterModel.submitItemList(it) }
     }
 
+    override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
+        repository.updatePokemonHeart(targetPokemonNum, heartValue)
+        loadLocalPokemonList()
+    }
+
+    override suspend fun savePokemonToLocalDB(pokemonEntity: PokemonEntity) {
+        repository.savePokemonToLocalDB(pokemonEntity)
+        loadLocalPokemonList()
+    }
+
     private suspend fun loadRemotePokemonListFailCallback(throwable: Throwable) {
         loadLocalPokemonList()
         view.showToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}")
     }
 
-    override fun addRandomItem() {
-        val newList = adapterModel.getCurrentList().toMutableList().apply {
-            add(getRandomDummyItem(adapterModel.getCurrentList().size + 1))
+    fun plusBtnClickListener() {
+        view.viewLifecycleScope.launch {
+            savePokemonToLocalDB(
+                getRandomDummyEntity(adapterModel.getCurrentList().size + 1)
+            )
         }
-        updatePokemonList(newList)
-    }
-
-    override fun renewPokemonList() {
-        adapterModel.submitItemList(repository.pokemonList)
-    }
-
-    override fun updatePokemonList(newList: List<PokemonListItem>) {
-        repository.pokemonList = newList
-        adapterModel.submitItemList(newList)
     }
 
     private fun heartClickListener(itemPosition: Int) {
-        val newList = adapterModel.getCurrentList().toMutableList().apply {
-            val selectedItem = this[itemPosition]
-            this[itemPosition] = this[itemPosition].copy(heart = selectedItem.heart.not())
+        view.viewLifecycleScope.launch {
+            val selectedItem = adapterModel.getCurrentList()[itemPosition]
+            updatePokemonHeart(
+                selectedItem.pokemon.getPokemonNum(),
+                selectedItem.heart.not()
+            )
         }
-        updatePokemonList(newList)
     }
 
     private fun itemClickListener(itemPosition: Int) {
