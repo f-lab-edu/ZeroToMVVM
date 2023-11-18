@@ -24,11 +24,15 @@ fun getDummy(): MutableList<PokemonListItem> {
     return dummyList
 }
 
-fun getRandomDummyItem(startNum: Int): PokemonListItem {
+fun getRandomDummyEntity(startNum: Int): PokemonEntity {
     val name = "Pokemon $startNum"
     val detailInfoUrl = "https://pokeapi.co/api/v2/pokemon/$startNum/"
     val isHeart = Random.nextInt() % 2 == 0
 
-    val pokemon = Pokemon(name, detailInfoUrl)
-    return PokemonListItem(pokemon, isHeart)
+    return PokemonEntity(
+        num = startNum,
+        name = name,
+        heart = isHeart,
+        detailInfoUrl = detailInfoUrl,
+    )
 }

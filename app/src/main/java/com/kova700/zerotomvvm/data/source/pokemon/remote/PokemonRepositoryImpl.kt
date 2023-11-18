@@ -4,6 +4,7 @@ import com.kova700.zerotomvvm.data.api.PokemonApi
 import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonDao
+import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toDBEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toListItem
 
@@ -16,15 +17,27 @@ class PokemonRepositoryImpl private constructor(
     override val wishPokemonList: List<PokemonListItem>
         get() = pokemonList.filter { it.heart }
 
-    override suspend fun loadRemotePokemonList(size: Int, page: Int): List<PokemonListItem> {
-        val response = pokemonService.getPokemon(size, page)
-        pokemonDao.insertPokemonList(response.results.toDBEntity())
-        return loadLocalPokemonList(size, page)
+    override suspend fun loadRemotePokemonList(limit: Int, offset: Int): List<PokemonListItem> {
+        val response = pokemonService.getPokemon(limit, offset)
+        savePokemonListToLocalDB(response.results.toDBEntity())
+        return loadLocalPokemonList(limit, offset)
     }
 
-    override suspend fun loadLocalPokemonList(size: Int, page: Int): List<PokemonListItem> {
-        pokemonList = pokemonDao.getPokemonList(page).toListItem()
+    override suspend fun loadLocalPokemonList(limit: Int, offset: Int): List<PokemonListItem> {
+        pokemonList = pokemonDao.getPokemonList(limit, offset).toListItem()
         return pokemonList
+    }
+
+    override suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>) {
+        pokemonDao.insertPokemonList(pokemonList)
+    }
+
+    override suspend fun savePokemonToLocalDB(pokemon: PokemonEntity) {
+        pokemonDao.insertPokemon(pokemon)
+    }
+
+    override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
+        pokemonDao.updatePokemonHeart(targetPokemonNum, heartValue)
     }
 
     companion object {
