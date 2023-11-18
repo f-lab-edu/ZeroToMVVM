@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
@@ -27,10 +28,7 @@ class HomeFragment : Fragment(), HomeContract.View {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
-    override val viewLifecycleScope: CoroutineScope
-        get() = viewLifecycleOwner.lifecycleScope
-
+    override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
     private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
 
     private val presenter by lazy {
@@ -66,11 +64,11 @@ class HomeFragment : Fragment(), HomeContract.View {
         loadLocalPokemonList()
     }
 
-    private fun loadRemotePokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+    private fun loadRemotePokemonList() = lifecycleScope.launch {
         presenter.loadRemotePokemonList()
     }
 
-    private fun loadLocalPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+    private fun loadLocalPokemonList() = lifecycleScope.launch {
         presenter.loadLocalPokemonList()
     }
 

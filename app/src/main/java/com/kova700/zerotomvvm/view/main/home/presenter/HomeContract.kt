@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 
 interface HomeContract {
     interface View {
-        val viewLifecycleScope: CoroutineScope
+        val lifecycleScope: CoroutineScope
         fun moveToDetail(selectedItem: PokemonListItem)
         fun showToast(message: String)
         fun showLoading()

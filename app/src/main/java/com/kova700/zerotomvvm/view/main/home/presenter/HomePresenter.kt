@@ -52,7 +52,7 @@ class HomePresenter(
     }
 
     fun plusBtnClickListener() {
-        view.viewLifecycleScope.launch {
+        view.lifecycleScope.launch {
             savePokemonToLocalDB(
                 getRandomDummyEntity(adapterModel.getCurrentList().size + 1)
             )
@@ -60,7 +60,7 @@ class HomePresenter(
     }
 
     private fun heartClickListener(itemPosition: Int) {
-        view.viewLifecycleScope.launch {
+        view.lifecycleScope.launch {
             val selectedItem = adapterModel.getCurrentList()[itemPosition]
             updatePokemonHeart(
                 selectedItem.pokemon.getPokemonNum(),
