@@ -5,10 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyItem
 import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
-class PokemonListAdapter() :
+class PokemonListAdapter :
     ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()),
     PokemonAdapterContract.View, PokemonAdapterContract.Model {
 
