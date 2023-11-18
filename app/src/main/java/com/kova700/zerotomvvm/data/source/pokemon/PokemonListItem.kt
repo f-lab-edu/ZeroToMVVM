@@ -8,10 +8,10 @@ data class Pokemon(
     @SerialName("name") val name: String,
     @SerialName("url") val detailInfoUrl: String
 ) : Serializable {
+    fun getPokemonNum() = detailInfoUrl.split("/".toRegex()).dropLast(1).last().toInt()
     fun getImageUrl(): String {
-        val index = detailInfoUrl.split("/".toRegex()).dropLast(1).last()
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/" +
-                "pokemon/other/official-artwork/$index.png"
+                "pokemon/other/official-artwork/${getPokemonNum()}.png"
     }
 }
 

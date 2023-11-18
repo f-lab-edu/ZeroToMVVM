@@ -58,4 +58,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     //kotlinx-serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    //jetpack-navigation
+    val nav_version = "2.7.5"
+    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 }
