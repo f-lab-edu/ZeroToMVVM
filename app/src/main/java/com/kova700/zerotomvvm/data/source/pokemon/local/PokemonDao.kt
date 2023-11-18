@@ -25,6 +25,17 @@ interface PokemonDao {
     ): List<PokemonEntity>
 
     @Query(
+        "SELECT * FROM PokemonEntity " +
+                "WHERE heart = :heartValue AND num >= :offset " +
+                "LIMIT :limit "
+    )
+    suspend fun getPokemonListFromHeart(
+        limit: Int,
+        offset: Int,
+        heartValue: Boolean
+    ): List<PokemonEntity>
+
+    @Query(
         "Update PokemonEntity SET heart = :heartValue " +
                 "WHERE num = :targetPokemonNum"
     )

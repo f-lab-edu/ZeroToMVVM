@@ -5,16 +5,17 @@ import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 
 interface PokemonRepository {
 
-    var pokemonList: List<PokemonListItem>
-    val wishPokemonList: List<PokemonListItem>
-        get() = pokemonList.filter { it.heart }
-
     suspend fun loadRemotePokemonList(
         limit: Int = 20,
         offset: Int = 0
     ): List<PokemonListItem>
 
     suspend fun loadLocalPokemonList(
+        limit: Int = 20,
+        offset: Int = 0
+    ): List<PokemonListItem>
+
+    suspend fun loadLocalWishPokemonList(
         limit: Int = 20,
         offset: Int = 0
     ): List<PokemonListItem>

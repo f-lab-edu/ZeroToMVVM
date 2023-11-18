@@ -13,10 +13,6 @@ class PokemonRepositoryImpl private constructor(
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 
-    override var pokemonList: List<PokemonListItem> = listOf()
-    override val wishPokemonList: List<PokemonListItem>
-        get() = pokemonList.filter { it.heart }
-
     override suspend fun loadRemotePokemonList(limit: Int, offset: Int): List<PokemonListItem> {
         val response = pokemonService.getPokemon(limit, offset)
         savePokemonListToLocalDB(response.results.toDBEntity())
@@ -24,8 +20,11 @@ class PokemonRepositoryImpl private constructor(
     }
 
     override suspend fun loadLocalPokemonList(limit: Int, offset: Int): List<PokemonListItem> {
-        pokemonList = pokemonDao.getPokemonList(limit, offset).toListItem()
-        return pokemonList
+        return pokemonDao.getPokemonList(limit, offset).toListItem()
+    }
+
+    override suspend fun loadLocalWishPokemonList(limit: Int, offset: Int): List<PokemonListItem> {
+        return pokemonDao.getPokemonListFromHeart(limit, offset, true).toListItem()
     }
 
     override suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>) {

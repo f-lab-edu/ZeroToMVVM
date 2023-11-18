@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.api.PokemonApi
@@ -18,11 +19,14 @@ import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import com.kova700.zerotomvvm.view.main.wish.presenter.WishContract
 import com.kova700.zerotomvvm.view.main.wish.presenter.WishPresenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class WishFragment : Fragment(), WishContract.View {
 
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
+    override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
     private val wishAdapter by lazy { PokemonListAdapter() }
 
     private val presenter by lazy {
@@ -49,12 +53,16 @@ class WishFragment : Fragment(), WishContract.View {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
-        presenter.loadWishPokemonList()
+        loadLocalWishPokemonList()
+    }
+
+    private fun loadLocalWishPokemonList() = lifecycleScope.launch {
+        presenter.loadLocalWishPokemonList()
     }
 
     override fun onResume() {
         super.onResume()
-        presenter.renewPokemonList()
+        loadLocalWishPokemonList()
     }
 
     private fun initRecyclerView() {
