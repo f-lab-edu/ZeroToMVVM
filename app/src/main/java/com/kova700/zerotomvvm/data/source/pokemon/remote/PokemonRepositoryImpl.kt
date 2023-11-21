@@ -24,31 +24,42 @@ class PokemonRepositoryImpl private constructor(
         onLastData: () -> Unit,
     ) {
         onStart()
-        //이미 런타임에 서버로부터 데이터를 가져온 적이 있다면 해당 분기문 들어감
-        //요청한 offset + 페이징size가 lastLoadPokemonNum보다 작다면 lastLoadPokemonNum만큼 로컬 DB에서 가져다 주는 방식
-        //==> configuration change, replace시에도 적합해 보인다.
+        //런타임에 데이터를 가져온 적이 있다면 해당 분기문 작동
+        //configuration change, replace 상황을 위해서 작성한 부분
         if (lastLoadPokemonNum >= offset + GET_POKEMON_API_PAGING_SIZE) {
-            onSuccess(loadAllLocalPokemonListSmallerThan(lastLoadPokemonNum))
+            loadAllLocalPokemonListSmallerThan(
+                targetNum = lastLoadPokemonNum,
+                onSuccess = onSuccess,
+            )
             onComplete()
             return
         }
 
-        //처음엔 로컬DB 저장 유무와 상관없이 서버로부터 그냥 가져오는 게 맞음
+        //로컬 DB에 저장 여부와 상관없이 처음엔 무조건 서버 API요청하게 구현함
         runCatching { pokemonService.getPokemon(offset = offset) }
             .onSuccess {
                 if (it.next.isNullOrBlank()) onLastData()
                 savePokemonListToLocalDB(it.results.toDBEntity())
                 lastLoadPokemonNum = it.results.last().getPokemonNum()
-                onSuccess(loadAllLocalPokemonListSmallerThan(lastLoadPokemonNum))
+                loadAllLocalPokemonListSmallerThan(
+                    targetNum = lastLoadPokemonNum,
+                    onSuccess = onSuccess,
+                )
                 onComplete()
             }
             .onFailure { onFailure(it) }
     }
 
-    override suspend fun loadAllLocalPokemonListSmallerThan(targetNum: Int): List<PokemonListItem> {
-        return pokemonDao.getAllPokemonListSmallerThan(targetNum).toListItem()
+    override suspend fun loadAllLocalPokemonListSmallerThan(
+        targetNum: Int,
+        onSuccess: (List<PokemonListItem>) -> Unit
+    ) {
+        runCatching { pokemonDao.getAllPokemonListSmallerThan(targetNum).toListItem() }
+            .onSuccess { onSuccess(it) }
     }
 
+
+    //TODO : onFailure부분 사실 없어도 될 것 같음
     override suspend fun loadLocalWishPokemonList(
         onStart: () -> Unit,
         onComplete: () -> Unit,

@@ -37,13 +37,21 @@ class HomePresenter(
         )
     }
 
-    override suspend fun renewPokemonList() {
-        if (adapterModel.getCurrentList().isEmpty()) return
-        runCatching { repository.loadAllLocalPokemonListSmallerThan(repository.lastLoadPokemonNum) }
-            .onSuccess { adapterModel.submitItemList(it) }
+    override suspend fun loadAllLocalPokemonListSmallerThan(targetNum: Int) {
+        repository.loadAllLocalPokemonListSmallerThan(
+            targetNum = targetNum,
+            onSuccess = {
+                adapterModel.submitItemList(it)
+                repository.lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
+            }
+        )
     }
 
-    //TODO 왜 다른 suspend 함수는 runCatching 안해줌?
+    suspend fun renewPokemonList() {
+        if (adapterModel.getCurrentList().isEmpty()) return
+        loadAllLocalPokemonListSmallerThan(repository.lastLoadPokemonNum)
+    }
+
     override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
         repository.updatePokemonHeart(targetPokemonNum, heartValue)
         renewPokemonList()
@@ -58,12 +66,9 @@ class HomePresenter(
     private fun loadRemotePokemonListFailCallback(throwable: Throwable) {
         view.lifecycleScope.launch {
             view.showToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}")
-            val list = repository.loadAllLocalPokemonListSmallerThan(
+            loadAllLocalPokemonListSmallerThan(
                 repository.lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
             )
-            repository.lastLoadPokemonNum = list.last().pokemon.getPokemonNum()
-            adapterModel.submitItemList(list)
-            hideLoading()
         }
     }
 

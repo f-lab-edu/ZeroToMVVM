@@ -14,8 +14,6 @@ interface PokemonRepository {
         onFailure: (Throwable) -> Unit,
         onLastData: () -> Unit,
     )
-    //다른 load는 반환값이 있는데,
-    //이건 없고 통일이 필요해 보임
 
     suspend fun loadLocalWishPokemonList(
         onStart: () -> Unit,
@@ -25,8 +23,9 @@ interface PokemonRepository {
     )
 
     suspend fun loadAllLocalPokemonListSmallerThan(
-        targetNum: Int
-    ): List<PokemonListItem>
+        targetNum: Int,
+        onSuccess: (List<PokemonListItem>) -> Unit
+    )
 
     suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>)
     suspend fun savePokemonToLocalDB(pokemon: PokemonEntity)
