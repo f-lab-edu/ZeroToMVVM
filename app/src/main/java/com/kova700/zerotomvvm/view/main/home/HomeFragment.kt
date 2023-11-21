@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
@@ -19,13 +21,14 @@ import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import com.kova700.zerotomvvm.view.main.home.presenter.HomeContract
 import com.kova700.zerotomvvm.view.main.home.presenter.HomePresenter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), HomeContract.View {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
+    override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
     private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
 
     private val presenter by lazy {
@@ -33,7 +36,10 @@ class HomeFragment : Fragment(), HomeContract.View {
             view = this,
             adapterView = homeAdapter,
             adapterModel = homeAdapter,
-            repository = PokemonRepositoryImpl.getInstance(PokemonApi.service)
+            repository = PokemonRepositoryImpl.getInstance(
+                PokemonApi.service,
+                AppDataBase.service
+            )
         )
     }
 
@@ -50,22 +56,24 @@ class HomeFragment : Fragment(), HomeContract.View {
         super.onViewCreated(view, savedInstanceState)
         setPlusBtnClickListener()
         initRecyclerView()
-        loadPokemonList()
+        loadRemotePokemonList()
     }
 
     override fun onResume() {
         super.onResume()
-        presenter.renewPokemonList()
+        loadLocalPokemonList()
     }
 
-    private fun loadPokemonList() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            presenter.loadPokemonList()
-        }
+    private fun loadRemotePokemonList() = lifecycleScope.launch {
+        presenter.loadRemotePokemonList()
+    }
+
+    private fun loadLocalPokemonList() = lifecycleScope.launch {
+        presenter.loadLocalPokemonList()
     }
 
     private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener { presenter.addRandomItem() }
+        binding.fabHomeFragment.setOnClickListener { presenter.plusBtnClickListener() }
     }
 
     private fun initRecyclerView() {

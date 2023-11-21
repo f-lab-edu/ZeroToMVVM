@@ -9,7 +9,7 @@ interface PokemonApi {
 
     @GET("pokemon")
     suspend fun getPokemon(
-        @Query("limit") size: Int,
+        @Query("limit") limit: Int,
         @Query("offset") offset: Int,
     ): PokemonResponse
 

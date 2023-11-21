@@ -2,22 +2,24 @@ package com.kova700.zerotomvvm.view.detail.presenter
 
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
+import kotlinx.coroutines.launch
 
 class DetailPresenter(
     val view: DetailContract.View,
     val repository: PokemonRepository
 ) : DetailContract.Presenter {
 
-    override fun updateItemData(newItem: PokemonListItem) {
-        val newList = repository.pokemonList.toMutableList()
-        val index = newItem.pokemon.getPokemonNum() -1
-        newList[index] = newItem
-        repository.pokemonList = newList
+    override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
+        repository.updatePokemonHeart(targetPokemonNum, heartValue)
     }
 
     fun heartClickListener(selectedItem: PokemonListItem) {
-        val newItem = selectedItem.copy(heart = selectedItem.heart.not())
-        updateItemData(newItem)
+        view.lifecycleScope.launch {
+            updatePokemonHeart(
+                selectedItem.pokemon.getPokemonNum(),
+                selectedItem.heart.not()
+            )
+        }
     }
 
 }
