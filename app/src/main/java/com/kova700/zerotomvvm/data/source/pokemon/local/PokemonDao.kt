@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
 
 @Dao
 interface PokemonDao {
@@ -16,13 +17,9 @@ interface PokemonDao {
 
     @Query(
         "SELECT * FROM PokemonEntity " +
-                "WHERE num >= :offset " +
-                "LIMIT :limit "
+                "WHERE num <= :targetNum "
     )
-    suspend fun getPokemonList(
-        limit: Int,
-        offset: Int
-    ): List<PokemonEntity>
+    suspend fun getAllPokemonListSmallerThan(targetNum: Int): List<PokemonEntity>
 
     @Query(
         "SELECT * FROM PokemonEntity " +
@@ -30,9 +27,9 @@ interface PokemonDao {
                 "LIMIT :limit "
     )
     suspend fun getPokemonListFromHeart(
-        limit: Int,
         offset: Int,
-        heartValue: Boolean
+        heartValue: Boolean,
+        limit: Int = GET_POKEMON_API_PAGING_SIZE
     ): List<PokemonEntity>
 
     @Query(
