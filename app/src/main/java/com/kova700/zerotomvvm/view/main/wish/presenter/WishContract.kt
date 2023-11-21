@@ -7,6 +7,9 @@ interface WishContract {
     interface View {
         val lifecycleScope: CoroutineScope
         fun moveToDetail(selectedItem: PokemonListItem)
+        fun showToast(message :String)
+        fun showLoading()
+        fun hideLoading()
     }
 
     interface Presenter {

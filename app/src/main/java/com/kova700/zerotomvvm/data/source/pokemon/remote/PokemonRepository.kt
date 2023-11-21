@@ -18,8 +18,11 @@ interface PokemonRepository {
     //이건 없고 통일이 필요해 보임
 
     suspend fun loadLocalWishPokemonList(
-        offset: Int = 0
-    ): List<PokemonListItem>
+        onStart: () -> Unit,
+        onComplete: () -> Unit,
+        onSuccess: (List<PokemonListItem>) -> Unit,
+        onFailure: (Throwable) -> Unit,
+    )
 
     suspend fun loadAllLocalPokemonListSmallerThan(
         targetNum: Int

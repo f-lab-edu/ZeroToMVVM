@@ -49,10 +49,17 @@ class PokemonRepositoryImpl private constructor(
         return pokemonDao.getAllPokemonListSmallerThan(targetNum).toListItem()
     }
 
-    //TODO : 이거도 지금까지 가져온 애들중에서 Wish인 애들 가져오게 수정해야 함
-    // 현재는 offset부터 30개만 가져오게 되어있음
-    override suspend fun loadLocalWishPokemonList(offset: Int): List<PokemonListItem> {
-        return pokemonDao.getPokemonListFromHeart(offset, true).toListItem()
+    override suspend fun loadLocalWishPokemonList(
+        onStart: () -> Unit,
+        onComplete: () -> Unit,
+        onSuccess: (List<PokemonListItem>) -> Unit,
+        onFailure: (Throwable) -> Unit
+    ) {
+        onStart()
+        runCatching { pokemonDao.getPokemonListFromHeart(true).toListItem() }
+            .onSuccess { onSuccess(it) }
+            .onFailure { onFailure(it) }
+        onComplete()
     }
 
     override suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>) {

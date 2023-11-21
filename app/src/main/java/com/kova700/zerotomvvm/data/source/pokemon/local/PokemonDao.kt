@@ -19,17 +19,16 @@ interface PokemonDao {
         "SELECT * FROM PokemonEntity " +
                 "WHERE num <= :targetNum "
     )
-    suspend fun getAllPokemonListSmallerThan(targetNum: Int): List<PokemonEntity>
+    suspend fun getAllPokemonListSmallerThan(
+        targetNum: Int
+    ): List<PokemonEntity>
 
     @Query(
         "SELECT * FROM PokemonEntity " +
-                "WHERE num >= :offset AND heart = :heartValue " +
-                "LIMIT :limit "
+                "WHERE heart = :heartValue "
     )
     suspend fun getPokemonListFromHeart(
-        offset: Int,
         heartValue: Boolean,
-        limit: Int = GET_POKEMON_API_PAGING_SIZE
     ): List<PokemonEntity>
 
     @Query(

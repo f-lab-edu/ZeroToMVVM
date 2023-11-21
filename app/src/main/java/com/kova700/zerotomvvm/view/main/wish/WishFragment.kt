@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -22,6 +23,8 @@ import com.kova700.zerotomvvm.view.main.wish.presenter.WishPresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+
+//TODO : 스크롤 포지션이 보존되지 않는 문제가 생김
 class WishFragment : Fragment(), WishContract.View {
 
     private var _binding: FragmentWishBinding? = null
@@ -56,13 +59,17 @@ class WishFragment : Fragment(), WishContract.View {
         loadLocalWishPokemonList()
     }
 
+    override fun onResume() {
+        super.onResume()
+        renewPokemonList()
+    }
+
     private fun loadLocalWishPokemonList() = lifecycleScope.launch {
         presenter.loadLocalWishPokemonList()
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadLocalWishPokemonList()
+    private fun renewPokemonList() = lifecycleScope.launch {
+        presenter.renewPokemonList()
     }
 
     private fun initRecyclerView() {
@@ -92,5 +99,17 @@ class WishFragment : Fragment(), WishContract.View {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
         }
         startActivity(intent)
+    }
+
+    override fun showToast(message: String) {
+        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showLoading() {
+        _binding?.pbWishFragment?.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        _binding?.pbWishFragment?.visibility = View.GONE
     }
 }
