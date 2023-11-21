@@ -12,14 +12,13 @@ interface PokemonRepository {
         onComplete: () -> Unit,
         onSuccess: (List<PokemonListItem>) -> Unit,
         onFailure: (Throwable) -> Unit,
-        onLastData: () -> Unit,
+        onLastData: () -> Unit
     )
 
     suspend fun loadLocalWishPokemonList(
         onStart: () -> Unit,
         onComplete: () -> Unit,
-        onSuccess: (List<PokemonListItem>) -> Unit,
-        onFailure: (Throwable) -> Unit,
+        onSuccess: (List<PokemonListItem>) -> Unit
     )
 
     suspend fun loadAllLocalPokemonListSmallerThan(

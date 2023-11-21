@@ -58,18 +58,14 @@ class PokemonRepositoryImpl private constructor(
             .onSuccess { onSuccess(it) }
     }
 
-
-    //TODO : onFailure부분 사실 없어도 될 것 같음
     override suspend fun loadLocalWishPokemonList(
         onStart: () -> Unit,
         onComplete: () -> Unit,
         onSuccess: (List<PokemonListItem>) -> Unit,
-        onFailure: (Throwable) -> Unit
     ) {
         onStart()
         runCatching { pokemonDao.getPokemonListFromHeart(true).toListItem() }
             .onSuccess { onSuccess(it) }
-            .onFailure { onFailure(it) }
         onComplete()
     }
 

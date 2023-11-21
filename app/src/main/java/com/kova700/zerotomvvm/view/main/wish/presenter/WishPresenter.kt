@@ -26,12 +26,7 @@ class WishPresenter(
             onStart = { view.showLoading() },
             onComplete = { view.hideLoading() },
             onSuccess = { adapterModel.submitItemList(it) },
-            onFailure = { loadLocalWishPokemonListFailCallback(it) },
         )
-    }
-
-    private fun loadLocalWishPokemonListFailCallback(throwable: Throwable) {
-        view.showToast("Wish 데이터 load를 실패했습니다. : ${throwable.message}")
     }
 
     suspend fun renewPokemonList() {
