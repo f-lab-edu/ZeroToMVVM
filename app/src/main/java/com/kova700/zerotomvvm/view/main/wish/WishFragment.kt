@@ -23,14 +23,12 @@ import com.kova700.zerotomvvm.view.main.wish.presenter.WishPresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-
-//TODO : 스크롤 포지션이 보존되지 않는 문제가 생김
 class WishFragment : Fragment(), WishContract.View {
 
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
     override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
-    private val wishAdapter by lazy { PokemonListAdapter() }
+    private val wishAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
 
     private val presenter by lazy {
         WishPresenter(
@@ -55,8 +53,7 @@ class WishFragment : Fragment(), WishContract.View {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initRecyclerView()
-        loadLocalWishPokemonList()
+        initUI()
     }
 
     override fun onResume() {
@@ -64,8 +61,10 @@ class WishFragment : Fragment(), WishContract.View {
         renewPokemonList()
     }
 
-    private fun loadLocalWishPokemonList() = lifecycleScope.launch {
+    private fun initUI() = lifecycleScope.launch {
+        //데이터를 로드하고 Adapter를 연결함으로써, 스크롤 포지션을 보존함
         presenter.loadLocalWishPokemonList()
+        initRecyclerView()
     }
 
     private fun renewPokemonList() = lifecycleScope.launch {
