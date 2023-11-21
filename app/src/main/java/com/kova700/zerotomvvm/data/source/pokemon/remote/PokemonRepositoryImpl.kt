@@ -14,22 +14,6 @@ class PokemonRepositoryImpl private constructor(
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
     override var lastLoadPokemonNum: Int = 0 //replace시에 마지막으로 load 했던 아이템 번호 기억하기 위해
-    //TODO : 매번 서버로 부터 데이터를 가져와서 덮어쓰기를 하지만, (로컬 DB 데이터들과 서버 데이터 불일치 해결을 위해)
-    // 네트워크가 끊겼다면, 서버로 부터 데이터를 가져올 수 없음으로,
-    // 이전에 로컬DB에 저장해놨던 데이터를 페이징해서 보여준다.
-    // 그 와중에 네트워크가 연결된다면, 이전에 마지막으로 서버로부터 가져왔던 데이터부터 다시 페이징을 보낸다.
-    // 어쩔 수 없이 화면은 마지막으로 서버로부터 가져왔던 데이터부터 보여지게 수정되겠지만,,,,
-    // 이를 위해서 로컬에서 가져온 마지막 번호를 표기하는 localLastLoadPokemonNum변수와
-    // 서버에서 가져온 마지막 번호를 표기하는 remoteLastLoadPokemonNum변수를 분리해서 가져가야할 듯하다.
-    // loadRemotePokemonList()가 호출될 때,
-    // remoteLastLoadPokemonNum로 API 요청을 매번 보내고, 네트워크가 없으면 요청이 실패하니까
-    // HomePresenter의 loadRemotePokemonListFailCallback에서 localLastLoadPokemonNum을 가지고,
-    // localLastLoadPokemonNum값을 증가시키면서 로컬에서 데이터를 가져오면 될듯,
-    // 중간에 네트워크가 다시 연결된다면 loadRemotePokemonList()의 요청이 성공할 테니까
-    // remoteLastLoadPokemonNum까지의 데이터를 보여주고,
-    // localLastLoadPokemonNum을 remoteLastLoadPokemonNum 값으로 통일
-
-    // 두 개가 다르다면, 작은걸로 서버에게 요청 보내는 방식으로 쓰면 될듯?
 
     override suspend fun loadRemotePokemonList(
         offset: Int,
