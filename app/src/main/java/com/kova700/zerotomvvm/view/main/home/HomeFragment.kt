@@ -120,13 +120,11 @@ class HomeFragment : Fragment(), HomeContract.View {
         Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
     }
 
-    //TODO : api 요청 중 replace발생 시 NullPointerException 방지하기 위해서 nullable인
-    // _binding로 접근하게 수정 필요
     override fun showLoading() {
-        binding.pbHomeFragment.visibility = View.VISIBLE
+        _binding?.pbHomeFragment?.visibility = View.VISIBLE
     }
 
     override fun hideLoading() {
-        binding.pbHomeFragment.visibility = View.GONE
+        _binding?.pbHomeFragment?.visibility = View.GONE
     }
 }
