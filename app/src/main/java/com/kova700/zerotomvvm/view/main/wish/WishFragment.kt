@@ -5,40 +5,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.coroutineScope
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
+import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
+import com.kova700.zerotomvvm.view.main.PokemonViewModel
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
-import com.kova700.zerotomvvm.view.main.wish.presenter.WishContract
-import com.kova700.zerotomvvm.view.main.wish.presenter.WishPresenter
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class WishFragment : Fragment(), WishContract.View {
+class WishFragment : Fragment() {
 
+    private var isFirstResume = true
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
-    override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
-    private val wishAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
-
-    private val presenter by lazy {
-        WishPresenter(
-            view = this,
-            adapterView = wishAdapter,
-            adapterModel = wishAdapter,
-            repository = PokemonRepositoryImpl.getInstance(
-                PokemonApi.service,
-                AppDataBase.service
-            )
+    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
+    private val wishAdapter: PokemonListAdapter by lazy {
+        PokemonListAdapter(
+            onItemClick = { itemPosition ->
+                pokemonViewModel.itemClickListener(wishAdapter.currentList[itemPosition])
+            },
+            onHeartClick = { itemPosition ->
+                pokemonViewModel.wishHeartClickListener(wishAdapter.currentList[itemPosition])
+            }
         )
     }
 
@@ -53,22 +47,41 @@ class WishFragment : Fragment(), WishContract.View {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initUI()
+        observeUiEvent()
+        observeLoadingFlag()
+        observePokemonListFlow() //이거 순서가 좀 꼬롬한데,,
+        initRecyclerView()
     }
 
     override fun onResume() {
         super.onResume()
+        if (isFirstResume) {
+            isFirstResume = false
+            return
+        }
         renewPokemonList()
     }
 
-    private fun initUI() = lifecycleScope.launch {
-        //데이터를 로드하고 Adapter를 연결함으로써, 스크롤 포지션을 보존함
-        presenter.loadLocalWishPokemonList()
-        initRecyclerView()
+    private fun renewPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.renewPokemonList()
     }
 
-    private fun renewPokemonList() = lifecycleScope.launch {
-        presenter.renewPokemonList()
+    private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.eventFlow.collect { event ->
+            handleUiEvent(event)
+        }
+    }
+
+    private fun observeLoadingFlag() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.isLoading.collect { isLoading ->
+            handleLoading(isLoading)
+        }
+    }
+
+    private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.wishPokemonListFlow.collect { pokemonList ->
+            wishAdapter.submitList(pokemonList)
+        }
     }
 
     private fun initRecyclerView() {
@@ -93,22 +106,26 @@ class WishFragment : Fragment(), WishContract.View {
         _binding = null
     }
 
-    override fun moveToDetail(selectedItem: PokemonListItem) {
+    private fun moveToDetail(selectedItem: PokemonListItem) {
         val intent = Intent(activity, DetailActivity::class.java).apply {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
         }
         startActivity(intent)
     }
 
-    override fun showToast(message: String) {
-        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
+    private fun showToast(message: String) {
+        requireActivity().showToast(message)
     }
 
-    override fun showLoading() {
-        _binding?.pbWishFragment?.visibility = View.VISIBLE
+    private fun handleLoading(isLoading: Boolean) {
+        _binding?.pbWishFragment?.visibility =
+            if (isLoading) View.VISIBLE else View.GONE
     }
 
-    override fun hideLoading() {
-        _binding?.pbWishFragment?.visibility = View.GONE
+    private fun handleUiEvent(event: PokemonViewModel.PokemonUiEvent) {
+        when (event) {
+            is PokemonViewModel.MoveToDetail -> moveToDetail(event.selectedItem)
+            is PokemonViewModel.ShowToast -> showToast(event.message)
+        }
     }
 }

@@ -22,11 +22,11 @@ class WishPresenter(
     }
 
     override suspend fun loadLocalWishPokemonList() {
-        repository.loadLocalWishPokemonList(
-            onStart = { view.showLoading() },
-            onComplete = { view.hideLoading() },
-            onSuccess = { adapterModel.submitItemList(it) },
-        )
+//        repository.loadLocalWishPokemonList(
+//            onStart = { view.showLoading() },
+//            onComplete = { view.hideLoading() },
+//            onSuccess = { adapterModel.submitItemList(it) },
+//        )
     }
 
     suspend fun renewPokemonList() {

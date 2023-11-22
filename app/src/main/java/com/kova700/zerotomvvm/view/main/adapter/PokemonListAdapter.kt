@@ -7,12 +7,10 @@ import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
 
-class PokemonListAdapter :
-    ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()),
-    PokemonAdapterContract.View, PokemonAdapterContract.Model {
-
-    override var onHeartClick: ((Int) -> Unit)? = null
-    override var onItemClick: ((Int) -> Unit)? = null
+class PokemonListAdapter(
+    private val onHeartClick: ((Int) -> Unit),
+    private val onItemClick: ((Int) -> Unit)
+) : ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListViewHolder {
         val binding =
@@ -25,8 +23,4 @@ class PokemonListAdapter :
     }
 
     override fun getItemViewType(position: Int): Int = R.layout.item_pokemon_list
-
-    override fun submitItemList(list: List<PokemonListItem>) {
-        super.submitList(list)
-    }
 }

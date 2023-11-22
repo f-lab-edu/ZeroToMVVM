@@ -42,14 +42,14 @@ class HomePresenter(
             targetNum = targetNum,
             onSuccess = {
                 adapterModel.submitItemList(it)
-                repository.lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
+//                repository.lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
             }
         )
     }
 
     suspend fun renewPokemonList() {
         if (adapterModel.getCurrentList().isEmpty()) return
-        loadAllLocalPokemonListSmallerThan(repository.lastLoadPokemonNum)
+//        loadAllLocalPokemonListSmallerThan(repository.lastLoadPokemonNum)
     }
 
     override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
@@ -66,9 +66,9 @@ class HomePresenter(
     private fun loadRemotePokemonListFailCallback(throwable: Throwable) {
         view.lifecycleScope.launch {
             view.showToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}")
-            loadAllLocalPokemonListSmallerThan(
-                repository.lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
-            )
+//            loadAllLocalPokemonListSmallerThan(
+//                repository.lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
+//            )
         }
     }
 
@@ -112,8 +112,8 @@ class HomePresenter(
         // adapterModel.getCurrentList().size - 1 > lastVisibleItemPosition를 포함한 위 상황이 전부 True가 되어서
         // 해당 if문을 통과하는 상황이 생김
         ) return
-        view.lifecycleScope.launch {
-            loadRemotePokemonList(repository.lastLoadPokemonNum)
-        }
+//        view.lifecycleScope.launch {
+//            loadRemotePokemonList(repository.lastLoadPokemonNum)
+//        }
     }
 }
