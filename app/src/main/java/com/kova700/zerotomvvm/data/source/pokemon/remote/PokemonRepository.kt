@@ -4,8 +4,6 @@ import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 
 interface PokemonRepository {
-    var lastLoadPokemonNum: Int
-
     suspend fun loadRemotePokemonList(
         offset: Int,
         onStart: () -> Unit,
@@ -13,12 +11,6 @@ interface PokemonRepository {
         onSuccess: (List<PokemonListItem>) -> Unit,
         onFailure: (Throwable) -> Unit,
         onLastData: () -> Unit
-    )
-
-    suspend fun loadLocalWishPokemonList(
-        onStart: () -> Unit,
-        onComplete: () -> Unit,
-        onSuccess: (List<PokemonListItem>) -> Unit
     )
 
     suspend fun loadAllLocalPokemonListSmallerThan(

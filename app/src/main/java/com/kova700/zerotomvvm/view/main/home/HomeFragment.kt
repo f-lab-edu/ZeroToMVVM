@@ -5,41 +5,38 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.coroutineScope
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
+import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
+import com.kova700.zerotomvvm.view.main.PokemonViewModel
+import com.kova700.zerotomvvm.view.main.PokemonViewModel.MoveToDetail
+import com.kova700.zerotomvvm.view.main.PokemonViewModel.PokemonUiEvent
+import com.kova700.zerotomvvm.view.main.PokemonViewModel.ShowToast
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
-import com.kova700.zerotomvvm.view.main.home.presenter.HomeContract
-import com.kova700.zerotomvvm.view.main.home.presenter.HomePresenter
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class HomeFragment : Fragment(), HomeContract.View {
+class HomeFragment : Fragment() {
 
+    private var isFirstResume = true
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
-    private val homeAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
-
-    private val presenter by lazy {
-        HomePresenter(
-            view = this,
-            adapterView = homeAdapter,
-            adapterModel = homeAdapter,
-            repository = PokemonRepositoryImpl.getInstance(
-                PokemonApi.service,
-                AppDataBase.service
-            )
+    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
+    private val homeAdapter: PokemonListAdapter by lazy {
+        PokemonListAdapter(
+            onItemClick = { itemPosition ->
+                pokemonViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
+            },
+            onHeartClick = { itemPosition ->
+                pokemonViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
+            }
         )
     }
 
@@ -55,25 +52,45 @@ class HomeFragment : Fragment(), HomeContract.View {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setPlusBtnClickListener()
+        observeUiEvent()
+        observeLoadingFlag()
+        observePokemonListFlow()
         initRecyclerView()
-        loadRemotePokemonList()
     }
 
     override fun onResume() {
         super.onResume()
+        if (isFirstResume) {
+            isFirstResume = false
+            return
+        }
         renewPokemonList()
     }
 
-    private fun loadRemotePokemonList() = lifecycleScope.launch {
-        presenter.loadRemotePokemonList()
+    private fun renewPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.renewPokemonList()
     }
 
-    private fun renewPokemonList() = lifecycleScope.launch {
-        presenter.renewPokemonList()
+    private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.eventFlow.collect { event ->
+            handleUiEvent(event)
+        }
+    }
+
+    private fun observeLoadingFlag() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.isLoading.collect { isLoading ->
+            handleLoading(isLoading)
+        }
+    }
+
+    private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
+        pokemonViewModel.pokemonListFlow.collect { pokemonList ->
+            homeAdapter.submitList(pokemonList)
+        }
     }
 
     private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener { presenter.plusBtnClickListener() }
+        binding.fabHomeFragment.setOnClickListener { pokemonViewModel.plusBtnClickListener() }
     }
 
     private fun initRecyclerView() {
@@ -91,7 +108,7 @@ class HomeFragment : Fragment(), HomeContract.View {
         val rcvScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                presenter.loadNextPokemonList(
+                pokemonViewModel.loadNextPokemonList(
                     gridLayoutManager.findLastVisibleItemPosition()
                 )
             }
@@ -109,22 +126,26 @@ class HomeFragment : Fragment(), HomeContract.View {
         _binding = null
     }
 
-    override fun moveToDetail(selectedItem: PokemonListItem) {
+    private fun moveToDetail(selectedItem: PokemonListItem) {
         val intent = Intent(activity, DetailActivity::class.java).apply {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
         }
         startActivity(intent)
     }
 
-    override fun showToast(message: String) {
-        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
+    private fun showToast(message: String) {
+        requireActivity().showToast(message)
     }
 
-    override fun showLoading() {
-        _binding?.pbHomeFragment?.visibility = View.VISIBLE
+    private fun handleUiEvent(event: PokemonUiEvent) {
+        when (event) {
+            is MoveToDetail -> moveToDetail(event.selectedItem)
+            is ShowToast -> showToast(event.message)
+        }
     }
 
-    override fun hideLoading() {
-        _binding?.pbHomeFragment?.visibility = View.GONE
+    private fun handleLoading(isLoading: Boolean) {
+        _binding?.pbHomeFragment?.visibility =
+            if (isLoading) View.VISIBLE else View.GONE
     }
 }
