@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -27,7 +28,7 @@ class WishFragment : Fragment(), WishContract.View {
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
     override val lifecycleScope: CoroutineScope = lifecycle.coroutineScope
-    private val wishAdapter by lazy { PokemonListAdapter() }
+    private val wishAdapter: PokemonListAdapter by lazy { PokemonListAdapter() }
 
     private val presenter by lazy {
         WishPresenter(
@@ -52,17 +53,22 @@ class WishFragment : Fragment(), WishContract.View {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initRecyclerView()
-        loadLocalWishPokemonList()
-    }
-
-    private fun loadLocalWishPokemonList() = lifecycleScope.launch {
-        presenter.loadLocalWishPokemonList()
+        initUI()
     }
 
     override fun onResume() {
         super.onResume()
-        loadLocalWishPokemonList()
+        renewPokemonList()
+    }
+
+    private fun initUI() = lifecycleScope.launch {
+        //데이터를 로드하고 Adapter를 연결함으로써, 스크롤 포지션을 보존함
+        presenter.loadLocalWishPokemonList()
+        initRecyclerView()
+    }
+
+    private fun renewPokemonList() = lifecycleScope.launch {
+        presenter.renewPokemonList()
     }
 
     private fun initRecyclerView() {
@@ -92,5 +98,17 @@ class WishFragment : Fragment(), WishContract.View {
             putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
         }
         startActivity(intent)
+    }
+
+    override fun showToast(message: String) {
+        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showLoading() {
+        _binding?.pbWishFragment?.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        _binding?.pbWishFragment?.visibility = View.GONE
     }
 }

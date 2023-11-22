@@ -22,8 +22,16 @@ class WishPresenter(
     }
 
     override suspend fun loadLocalWishPokemonList() {
-        runCatching { repository.loadLocalWishPokemonList() }
-            .onSuccess { adapterModel.submitItemList(it) }
+        repository.loadLocalWishPokemonList(
+            onStart = { view.showLoading() },
+            onComplete = { view.hideLoading() },
+            onSuccess = { adapterModel.submitItemList(it) },
+        )
+    }
+
+    suspend fun renewPokemonList() {
+        if (adapterModel.getCurrentList().isEmpty()) return
+        loadLocalWishPokemonList()
     }
 
     override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
