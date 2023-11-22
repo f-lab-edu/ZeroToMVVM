@@ -54,7 +54,7 @@ class HomeFragment : Fragment() {
         setPlusBtnClickListener()
         observeUiEvent()
         observeLoadingFlag()
-        observePokemonListFlow() //이거 순서가 좀 꼬롬한데,,
+        observePokemonListFlow()
         initRecyclerView()
     }
 

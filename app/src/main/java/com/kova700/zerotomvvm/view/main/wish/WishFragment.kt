@@ -49,7 +49,7 @@ class WishFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observeUiEvent()
         observeLoadingFlag()
-        observePokemonListFlow() //이거 순서가 좀 꼬롬한데,,
+        observePokemonListFlow()
         initRecyclerView()
     }
 
