@@ -8,6 +8,8 @@ import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonDao
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toDBEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toListItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class PokemonRepositoryImpl private constructor(
     private val pokemonService: PokemonApi,
@@ -42,6 +44,10 @@ class PokemonRepositoryImpl private constructor(
     ) {
         runCatching { pokemonDao.getAllPokemonListSmallerThan(targetNum).toListItem() }
             .onSuccess { onSuccess(it) }
+    }
+
+    override fun loadWishPokemonList(): Flow<List<PokemonListItem>> {
+        return pokemonDao.getPokemonListFromHeart(true).map { it.toListItem() }
     }
 
     override suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>) {
