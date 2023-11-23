@@ -2,6 +2,7 @@ package com.kova700.zerotomvvm.data.source.pokemon.remote
 
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
+import kotlinx.coroutines.flow.Flow
 
 interface PokemonRepository {
     suspend fun loadRemotePokemonList(
@@ -17,6 +18,8 @@ interface PokemonRepository {
         targetNum: Int,
         onSuccess: (List<PokemonListItem>) -> Unit
     )
+
+    fun loadWishPokemonList(): Flow<List<PokemonListItem>>
 
     suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>)
     suspend fun savePokemonToLocalDB(pokemon: PokemonEntity)
