@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 //TODO : 로컬 DB혹은 Repository에서 Flow로 받아오게 수정해보자.
+//TODO : WISH가 페이징해서 가져온 애들에서 필터링해서 가져오고 있어서 전부 안가져와지는 이슈가 있음
+//TODO : 페이징해서 가져올 때, 네트워크 실패시 로딩이 안사라짐,  + 로컬 DB에서 남은 애들 가져오고 있지 않음
 class PokemonViewModel : ViewModel() {
 
     private val pokemonRepository: PokemonRepository by lazy {
@@ -45,7 +47,9 @@ class PokemonViewModel : ViewModel() {
                 pokemonListFlow.value = it
                 lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
             },
-            onFailure = { loadRemotePokemonListFailCallback(it) },
+            onFailure = {
+                loadRemotePokemonListFailCallback(it)
+            },
             onLastData = { isPokemonLastData = true }
         )
     }
@@ -56,6 +60,7 @@ class PokemonViewModel : ViewModel() {
         loadAllLocalPokemonListSmallerThan(
             lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
         )
+        isLoading.value = false
     }
 
     private suspend fun loadAllLocalPokemonListSmallerThan(targetNum: Int) {
