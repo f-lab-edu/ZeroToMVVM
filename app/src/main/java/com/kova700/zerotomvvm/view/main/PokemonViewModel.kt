@@ -12,6 +12,8 @@ import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 //TODO : 로컬 DB혹은 Repository에서 Flow로 받아오게 수정해보자.
@@ -29,7 +31,11 @@ class PokemonViewModel : ViewModel() {
 
     val eventFlow = MutableSharedFlow<PokemonUiEvent>()
     val pokemonListFlow = MutableStateFlow<List<PokemonListItem>>(listOf())
-    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList()
+    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = listOf()
+    )
     var isLoading = MutableStateFlow(false)
 
     init {
