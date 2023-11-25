@@ -12,7 +12,9 @@ import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTE
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
     private lateinit var pokemonListItem: PokemonListItem
-    private val pokemonViewModel by viewModels<DetailViewModel>()
+    private val pokemonViewModel by viewModels<DetailViewModel> {
+        DetailViewModel.Factory
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
