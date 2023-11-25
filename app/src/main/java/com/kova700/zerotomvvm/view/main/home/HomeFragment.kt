@@ -28,7 +28,9 @@ class HomeFragment : Fragment() {
     private var isFirstResume = true
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
+    private val pokemonViewModel by activityViewModels<PokemonViewModel> {
+        PokemonViewModel.Factory
+    }
     private val homeAdapter: PokemonListAdapter by lazy {
         PokemonListAdapter(
             onItemClick = { itemPosition ->
