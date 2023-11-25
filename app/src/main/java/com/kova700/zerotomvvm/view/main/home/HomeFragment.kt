@@ -11,7 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.kova700.zerotomvvm.R
+import com.kova700.zerotomvvm.data.api.PokemonApi
+import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
+import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
@@ -29,7 +32,12 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val pokemonViewModel by activityViewModels<PokemonViewModel> {
-        PokemonViewModel.Factory
+        PokemonViewModel.provideFactory(
+            PokemonRepositoryImpl.getInstance(
+                PokemonApi.service,
+                AppDataBase.service
+            )
+        )
     }
     private val homeAdapter: PokemonListAdapter by lazy {
         PokemonListAdapter(

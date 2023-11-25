@@ -1,18 +1,13 @@
 package com.kova700.zerotomvvm.view.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.kova700.zerotomvvm.data.api.PokemonApi
 import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
-import com.kova700.zerotomvvm.util.TAG
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +15,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 //TODO : 로컬 DB혹은 Repository에서 Flow로 받아오게 수정해보자.
-//TODO : DetailActivity 하트 결과 불일치 이슈 있음
 class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
 
     private var isPokemonLastData: Boolean = false
@@ -36,7 +30,6 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     var isLoading = MutableStateFlow(false)
 
     init {
-        Log.d(TAG, "PokemonViewModel: init() - called")
         viewModelScope.launch { loadRemotePokemonList() }
     }
 
@@ -128,18 +121,14 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     data class ShowToast(val message: String) : PokemonUiEvent
 
     companion object {
-        val Factory = object : ViewModelProvider.Factory {
+        fun provideFactory(pokemonRepository: PokemonRepository) =
+            object : ViewModelProvider.Factory {
 
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return PokemonViewModel(
-                    PokemonRepositoryImpl.getInstance(
-                        PokemonApi.service,
-                        AppDataBase.service
-                    )
-                ) as T
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return PokemonViewModel(pokemonRepository) as T
+                }
             }
-        }
     }
 
 }
