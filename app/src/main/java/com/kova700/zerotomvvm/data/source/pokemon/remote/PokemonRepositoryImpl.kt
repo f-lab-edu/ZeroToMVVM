@@ -8,6 +8,9 @@ import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonDao
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toDBEntity
 import com.kova700.zerotomvvm.data.source.pokemon.toListItem
+import com.kova700.zerotomvvm.util.Failure
+import com.kova700.zerotomvvm.util.NetworkResult
+import com.kova700.zerotomvvm.util.Success
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -16,45 +19,44 @@ class PokemonRepositoryImpl private constructor(
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 
-    override suspend fun loadRemotePokemonList(
-        offset: Int,
-        onStart: () -> Unit,
-        onComplete: () -> Unit,
-        onSuccess: (List<PokemonListItem>) -> Unit,
-        onFailure: (Throwable) -> Unit,
-        onLastData: () -> Unit,
-    ) {
-        onStart()
-        runCatching { pokemonService.getPokemon(offset = offset) }
-            .onSuccess {
-                if (it.next.isNullOrBlank()) onLastData()
-                savePokemonListToLocalDB(it.results.toDBEntity())
-                loadAllLocalPokemonListSmallerThan(
-                    targetNum = offset + GET_POKEMON_API_PAGING_SIZE,
-                    onSuccess = onSuccess,
+    override suspend fun loadPokemonList(offset: Int): NetworkResult<Flow<List<PokemonListItem>>> {
+        runCatching { loadRemotePokemonList(offset) }
+            .onSuccess { isLast ->
+                return Success(
+                    data = loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE),
+                    isLast = isLast
                 )
-                onComplete()
             }
-            .onFailure { onFailure(it) }
+            .onFailure {
+                return Failure(
+                    data = loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE),
+                    exception = it
+                )
+            }
+        throw Exception() //뭔가 좀 애매하네..
     }
 
-    override suspend fun loadAllLocalPokemonListSmallerThan(
-        targetNum: Int,
-        onSuccess: (List<PokemonListItem>) -> Unit
-    ) {
-        runCatching { pokemonDao.getAllPokemonListSmallerThan(targetNum).toListItem() }
-            .onSuccess { onSuccess(it) }
+    private suspend fun loadRemotePokemonList(offset: Int): Boolean {
+        val response = pokemonService.getPokemon(offset = offset)
+        val pokemonList = response.results
+        insertPokemonList(pokemonList.toDBEntity())
+        val isLast = response.next == null
+        return isLast
+    }
+
+    private fun loadAllLocalPokemonListSmallerThan(targetNum: Int): Flow<List<PokemonListItem>> {
+        return pokemonDao.getAllPokemonListSmallerThan(targetNum).map { it.toListItem() }
     }
 
     override fun loadWishPokemonList(): Flow<List<PokemonListItem>> {
         return pokemonDao.getPokemonListFromHeart(true).map { it.toListItem() }
     }
 
-    override suspend fun savePokemonListToLocalDB(pokemonList: List<PokemonEntity>) {
+    override suspend fun insertPokemonList(pokemonList: List<PokemonEntity>) {
         pokemonDao.insertPokemonList(pokemonList)
     }
 
-    override suspend fun savePokemonToLocalDB(pokemon: PokemonEntity) {
+    override suspend fun insertPokemonItem(pokemon: PokemonEntity) {
         pokemonDao.insertPokemon(pokemon)
     }
 

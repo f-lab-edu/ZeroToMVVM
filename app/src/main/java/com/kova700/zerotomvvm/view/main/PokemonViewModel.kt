@@ -8,92 +8,78 @@ import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
+import com.kova700.zerotomvvm.util.Failure
+import com.kova700.zerotomvvm.util.Success
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-//TODO : 로컬 DB혹은 Repository에서 Flow로 받아오게 수정해보자.
+//TODO : Local , Remote 데이터 구분은 Repository에서 하고, 구분 내용을 가져오지 않도록 수정
+//TODO : 외부에서 Flow에 emit못하게 BackingProperty로 가시성 설정
 class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
 
-    private var isPokemonLastData: Boolean = false
-    private var lastLoadPokemonNum = 0
-
     val eventFlow = MutableSharedFlow<PokemonUiEvent>()
-    val pokemonListFlow = MutableStateFlow<List<PokemonListItem>>(listOf())
-    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = listOf()
-    )
     var isLoading = MutableStateFlow(false)
+    private var isLastDataLoaded = false
 
-    init {
-        viewModelScope.launch { loadRemotePokemonList() }
-    }
+    private val pokemonNumOffset: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    private suspend fun loadRemotePokemonList(offset: Int = 0) {
-        pokemonRepository.loadRemotePokemonList(
-            offset = offset,
-            onStart = { isLoading.value = true },
-            onComplete = { isLoading.value = false },
-            onSuccess = {
-                pokemonListFlow.value = it
-                lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
-            },
-            onFailure = {
-                loadRemotePokemonListFailCallback(it)
-            },
-            onLastData = { isPokemonLastData = true }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pokemonListFlow = pokemonNumOffset
+        .flatMapMerge { offset -> loadPokemonList(offset) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = listOf()
         )
-    }
 
-    //서버로부터 API요청이 실패하면 이전에 로컬 DB에 저장해놨던 데이터를 가져옴
-    private fun loadRemotePokemonListFailCallback(throwable: Throwable) = viewModelScope.launch {
-        startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}"))
-        loadAllLocalPokemonListSmallerThan(
-            lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
+    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = listOf()
         )
-        isLoading.value = false
-    }
 
-    private suspend fun loadAllLocalPokemonListSmallerThan(targetNum: Int) {
-        pokemonRepository.loadAllLocalPokemonListSmallerThan(
-            targetNum = targetNum,
-            onSuccess = {
-                pokemonListFlow.value = it
-                lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
-            }
-        )
-    }
-
-    suspend fun renewPokemonList() {
-        if (pokemonListFlow.value.isEmpty()) return
-        loadAllLocalPokemonListSmallerThan(lastLoadPokemonNum)
-    }
-
-    private suspend fun savePokemonToLocalDB(pokemonEntity: PokemonEntity) {
-        pokemonRepository.savePokemonToLocalDB(pokemonEntity)
-        renewPokemonList()
+    private suspend fun insertPokemonItem(pokemonEntity: PokemonEntity) {
+        pokemonRepository.insertPokemonItem(pokemonEntity)
     }
 
     private suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
         pokemonRepository.updatePokemonHeart(targetPokemonNum, heartValue)
-        renewPokemonList()
     }
 
     fun plusBtnClickListener() = viewModelScope.launch {
-        savePokemonToLocalDB(
+        insertPokemonItem(
             getRandomDummyEntity(pokemonListFlow.value.size + 1)
         )
     }
 
+    private suspend fun loadPokemonList(offset: Int = 0): Flow<List<PokemonListItem>> {
+        isLoading.value = true
+        val result = pokemonRepository.loadPokemonList(offset)
+        when (result) {
+            is Success -> {
+                isLastDataLoaded = result.isLast
+            }
+
+            is Failure -> {
+                startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${result.exception}"))
+            }
+        }
+        isLoading.value = false
+        return result.data
+    }
+
     fun loadNextPokemonList(lastVisibleItemPosition: Int) {
-        if (isLoading.value || isPokemonLastData ||
+        if (isLoading.value || isLastDataLoaded ||
             pokemonListFlow.value.size - 1 > lastVisibleItemPosition
         ) return
-        viewModelScope.launch { loadRemotePokemonList(lastLoadPokemonNum) }
+        pokemonNumOffset.value = pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE
     }
 
     fun itemClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {

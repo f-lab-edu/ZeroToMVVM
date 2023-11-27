@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 
 class WishFragment : Fragment() {
 
-    private var isFirstResume = true
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
     private val pokemonViewModel by activityViewModels<PokemonViewModel> {
@@ -61,19 +60,6 @@ class WishFragment : Fragment() {
         observeLoadingFlag()
         observePokemonListFlow()
         initRecyclerView()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isFirstResume) {
-            isFirstResume = false
-            return
-        }
-        renewPokemonList()
-    }
-
-    private fun renewPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.renewPokemonList()
     }
 
     private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {

@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
-    private var isFirstResume = true
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val pokemonViewModel by activityViewModels<PokemonViewModel> {
@@ -66,19 +65,6 @@ class HomeFragment : Fragment() {
         observeLoadingFlag()
         observePokemonListFlow()
         initRecyclerView()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isFirstResume) {
-            isFirstResume = false
-            return
-        }
-        renewPokemonList()
-    }
-
-    private fun renewPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.renewPokemonList()
     }
 
     private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {

@@ -20,9 +20,9 @@ interface PokemonDao {
         "SELECT * FROM PokemonEntity " +
                 "WHERE num <= :targetNum "
     )
-    suspend fun getAllPokemonListSmallerThan(
+    fun getAllPokemonListSmallerThan(
         targetNum: Int
-    ): List<PokemonEntity>
+    ): Flow<List<PokemonEntity>>
 
     @Query(
         "SELECT * FROM PokemonEntity " +
