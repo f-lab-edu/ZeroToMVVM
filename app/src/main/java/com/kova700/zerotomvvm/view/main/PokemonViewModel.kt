@@ -14,19 +14,23 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-//TODO : Local , Remote 데이터 구분은 Repository에서 하고, 구분 내용을 가져오지 않도록 수정
-//TODO : 외부에서 Flow에 emit못하게 BackingProperty로 가시성 설정
 class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
 
-    val eventFlow = MutableSharedFlow<PokemonUiEvent>()
-    var isLoading = MutableStateFlow(false)
-    private var isLastDataLoaded = false
+    private val _eventFlow = MutableSharedFlow<PokemonUiEvent>()
+    val eventFlow: SharedFlow<PokemonUiEvent>
+        get() = _eventFlow
 
+    private var _isLoading = MutableStateFlow(false)
+    val isLoading: SharedFlow<Boolean>
+        get() = _isLoading
+
+    private var isLastDataLoaded = false
     private val pokemonNumOffset: MutableStateFlow<Int> = MutableStateFlow(0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,7 +64,7 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     }
 
     private suspend fun loadPokemonList(offset: Int = 0): Flow<List<PokemonListItem>> {
-        isLoading.value = true
+        _isLoading.value = true
         val result = pokemonRepository.loadPokemonList(offset)
         when (result) {
             is Success -> {
@@ -71,12 +75,12 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
                 startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${result.exception}"))
             }
         }
-        isLoading.value = false
+        _isLoading.value = false
         return result.data
     }
 
     fun loadNextPokemonList(lastVisibleItemPosition: Int) {
-        if (isLoading.value || isLastDataLoaded ||
+        if (_isLoading.value || isLastDataLoaded ||
             pokemonListFlow.value.size - 1 > lastVisibleItemPosition
         ) return
         pokemonNumOffset.value = pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE
@@ -99,7 +103,7 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     }
 
     private suspend fun startEvent(event: PokemonUiEvent) {
-        eventFlow.emit(event)
+        _eventFlow.emit(event)
     }
 
     sealed interface PokemonUiEvent
