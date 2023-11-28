@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
@@ -64,7 +65,7 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     }
 
     private suspend fun loadPokemonList(offset: Int = 0): Flow<List<PokemonListItem>> {
-        _isLoading.value = true
+        _isLoading.update { true }
         val result = pokemonRepository.loadPokemonList(offset)
         when (result) {
             is Success -> {
@@ -75,7 +76,7 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
                 startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${result.exception}"))
             }
         }
-        _isLoading.value = false
+        _isLoading.update { false }
         return result.data
     }
 
@@ -83,7 +84,7 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
         if (_isLoading.value || isLastDataLoaded ||
             pokemonListFlow.value.size - 1 > lastVisibleItemPosition
         ) return
-        pokemonNumOffset.value = pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE
+        pokemonNumOffset.update { pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE }
     }
 
     fun itemClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {
