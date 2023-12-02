@@ -1,15 +1,15 @@
 package com.kova700.zerotomvvm.view.main
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
+import com.kova700.zerotomvvm.data.api.PokemonService.Companion.GET_POKEMON_API_PAGING_SIZE
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.util.Failure
 import com.kova700.zerotomvvm.util.Success
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,8 +20,12 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewModel() {
+@HiltViewModel
+class PokemonViewModel @Inject constructor(
+    private val pokemonRepository: PokemonRepository
+) : ViewModel() {
 
     private val _eventFlow = MutableSharedFlow<PokemonUiEvent>()
     val eventFlow: SharedFlow<PokemonUiEvent>
@@ -110,16 +114,4 @@ class PokemonViewModel(private val pokemonRepository: PokemonRepository) : ViewM
     sealed interface PokemonUiEvent
     data class MoveToDetail(val selectedItem: PokemonListItem) : PokemonUiEvent
     data class ShowToast(val message: String) : PokemonUiEvent
-
-    companion object {
-        fun provideFactory(pokemonRepository: PokemonRepository) =
-            object : ViewModelProvider.Factory {
-
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return PokemonViewModel(pokemonRepository) as T
-                }
-            }
-    }
-
 }

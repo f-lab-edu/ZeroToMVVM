@@ -1,8 +1,7 @@
 package com.kova700.zerotomvvm.data.source.pokemon.remote
 
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
-import com.kova700.zerotomvvm.data.db.AppDataBase
+import com.kova700.zerotomvvm.data.api.PokemonService
+import com.kova700.zerotomvvm.data.api.PokemonService.Companion.GET_POKEMON_API_PAGING_SIZE
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonDao
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
@@ -13,9 +12,10 @@ import com.kova700.zerotomvvm.util.NetworkResult
 import com.kova700.zerotomvvm.util.Success
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class PokemonRepositoryImpl private constructor(
-    private val pokemonService: PokemonApi,
+class PokemonRepositoryImpl @Inject constructor(
+    private val pokemonService: PokemonService,
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 
@@ -62,18 +62,5 @@ class PokemonRepositoryImpl private constructor(
 
     override suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
         pokemonDao.updatePokemonHeart(targetPokemonNum, heartValue)
-    }
-
-    companion object {
-        @Volatile
-        private var INSTANCE: PokemonRepository? = null
-
-        fun getInstance(pokemonService: PokemonApi, appDatabase: AppDataBase): PokemonRepository =
-            INSTANCE ?: synchronized(this) {
-                PokemonRepositoryImpl(
-                    pokemonService,
-                    appDatabase.pokemonDao()
-                ).apply { INSTANCE = this }
-            }
     }
 }

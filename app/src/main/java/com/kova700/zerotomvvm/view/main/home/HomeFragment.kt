@@ -11,10 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
@@ -24,20 +21,15 @@ import com.kova700.zerotomvvm.view.main.PokemonViewModel.MoveToDetail
 import com.kova700.zerotomvvm.view.main.PokemonViewModel.PokemonUiEvent
 import com.kova700.zerotomvvm.view.main.PokemonViewModel.ShowToast
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val pokemonViewModel by activityViewModels<PokemonViewModel> {
-        PokemonViewModel.provideFactory(
-            PokemonRepositoryImpl.getInstance(
-                PokemonApi.service,
-                AppDataBase.service
-            )
-        )
-    }
+    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
     private val homeAdapter: PokemonListAdapter by lazy {
         PokemonListAdapter(
             onItemClick = { itemPosition ->

@@ -4,24 +4,21 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
 import com.kova700.zerotomvvm.util.getSerializableExtraData
 import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
+
+    @Inject
+    lateinit var detailViewModelFactory: DetailViewModel.AssistedFactory
     private val detailViewModel by viewModels<DetailViewModel> {
-        DetailViewModel.provideFactory(
-            PokemonRepositoryImpl.getInstance(
-                PokemonApi.service,
-                AppDataBase.service
-            ),
-            getPokemonExtraData()
-        )
+        DetailViewModel.provideFactory(detailViewModelFactory, getPokemonExtraData())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -10,30 +10,22 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.kova700.zerotomvvm.R
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.db.AppDataBase
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
 import com.kova700.zerotomvvm.databinding.FragmentWishBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
 import com.kova700.zerotomvvm.view.main.PokemonViewModel
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class WishFragment : Fragment() {
 
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
-    private val pokemonViewModel by activityViewModels<PokemonViewModel> {
-        PokemonViewModel.provideFactory(
-            PokemonRepositoryImpl.getInstance(
-                PokemonApi.service,
-                AppDataBase.service
-            )
-        )
-    }
+    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
     private val wishAdapter: PokemonListAdapter by lazy {
         PokemonListAdapter(
             onItemClick = { itemPosition ->
