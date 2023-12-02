@@ -13,13 +13,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+    private const val DB_NAME = "ZeroToMVVM"
 
     @Provides
     @Singleton
     fun provideAppDatabase(
         application: Application
     ): AppDataBase = Room
-        .databaseBuilder(application, AppDataBase::class.java, AppDataBase.DB_NAME)
+        .databaseBuilder(application, AppDataBase::class.java, DB_NAME)
         .build()
 
     @Provides
