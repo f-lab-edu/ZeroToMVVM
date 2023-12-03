@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -40,7 +40,7 @@ class PokemonViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val pokemonListFlow = pokemonNumOffset
-        .flatMapMerge { offset -> loadPokemonList(offset) }
+        .flatMapLatest { offset -> loadPokemonList(offset) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
@@ -88,6 +88,8 @@ class PokemonViewModel @Inject constructor(
         if (_isLoading.value || isLastDataLoaded ||
             pokemonListFlow.value.size - 1 > lastVisibleItemPosition
         ) return
+
+        _isLoading.update { true }
         pokemonNumOffset.update { pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE }
     }
 
