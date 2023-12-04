@@ -19,6 +19,7 @@ import com.kova700.zerotomvvm.view.main.PokemonViewModel
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WishFragment : Fragment() {
@@ -26,16 +27,9 @@ class WishFragment : Fragment() {
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
     private val pokemonViewModel by activityViewModels<PokemonViewModel>()
-    private val wishAdapter: PokemonListAdapter by lazy {
-        PokemonListAdapter(
-            onItemClick = { itemPosition ->
-                pokemonViewModel.itemClickListener(wishAdapter.currentList[itemPosition])
-            },
-            onHeartClick = { itemPosition ->
-                pokemonViewModel.wishHeartClickListener(wishAdapter.currentList[itemPosition])
-            }
-        )
-    }
+
+    @Inject
+    lateinit var wishAdapter: PokemonListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +45,7 @@ class WishFragment : Fragment() {
         observeUiEvent()
         observeLoadingFlag()
         observePokemonListFlow()
+        initAdapter()
         initRecyclerView()
     }
 
@@ -69,6 +64,17 @@ class WishFragment : Fragment() {
     private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
         pokemonViewModel.wishPokemonListFlow.collect { pokemonList ->
             wishAdapter.submitList(pokemonList)
+        }
+    }
+
+    private fun initAdapter() {
+        wishAdapter.apply {
+            onItemClick = { itemPosition ->
+                pokemonViewModel.itemClickListener(wishAdapter.currentList[itemPosition])
+            }
+            onHeartClick = { itemPosition ->
+                pokemonViewModel.wishHeartClickListener(wishAdapter.currentList[itemPosition])
+            }
         }
     }
 

@@ -6,11 +6,12 @@ import androidx.recyclerview.widget.ListAdapter
 import com.kova700.zerotomvvm.R
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.ItemPokemonListBinding
+import javax.inject.Inject
 
-class PokemonListAdapter(
-    private val onHeartClick: ((Int) -> Unit),
-    private val onItemClick: ((Int) -> Unit)
-) : ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()) {
+class PokemonListAdapter @Inject constructor() :
+    ListAdapter<PokemonListItem, PokemonListViewHolder>(PokemonListItemDiffUtil()) {
+    var onHeartClick: ((Int) -> Unit)? = null
+    var onItemClick: ((Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListViewHolder {
         val binding =
