@@ -21,24 +21,19 @@ import com.kova700.zerotomvvm.view.main.PokemonViewModel.MoveToDetail
 import com.kova700.zerotomvvm.view.main.PokemonViewModel.PokemonUiEvent
 import com.kova700.zerotomvvm.view.main.PokemonViewModel.ShowToast
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
-    private var isFirstResume = true
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val pokemonViewModel by activityViewModels<PokemonViewModel>()
-    private val homeAdapter: PokemonListAdapter by lazy {
-        PokemonListAdapter(
-            onItemClick = { itemPosition ->
-                pokemonViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
-            },
-            onHeartClick = { itemPosition ->
-                pokemonViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
-            }
-        )
-    }
+
+    @Inject
+    lateinit var homeAdapter: PokemonListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,20 +50,8 @@ class HomeFragment : Fragment() {
         observeUiEvent()
         observeLoadingFlag()
         observePokemonListFlow()
+        initAdapter()
         initRecyclerView()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isFirstResume) {
-            isFirstResume = false
-            return
-        }
-        renewPokemonList()
-    }
-
-    private fun renewPokemonList() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.renewPokemonList()
     }
 
     private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
@@ -91,6 +74,17 @@ class HomeFragment : Fragment() {
 
     private fun setPlusBtnClickListener() {
         binding.fabHomeFragment.setOnClickListener { pokemonViewModel.plusBtnClickListener() }
+    }
+
+    private fun initAdapter() {
+        homeAdapter.apply {
+            onItemClick = { itemPosition ->
+                pokemonViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
+            }
+            onHeartClick = { itemPosition ->
+                pokemonViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
+            }
+        }
     }
 
     private fun initRecyclerView() {

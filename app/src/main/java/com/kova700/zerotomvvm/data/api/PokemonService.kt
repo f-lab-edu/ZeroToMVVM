@@ -4,7 +4,7 @@ import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface PokemonApi {
+interface PokemonService {
 
     @GET("pokemon")
     suspend fun getPokemon(
@@ -14,6 +14,5 @@ interface PokemonApi {
 
     companion object {
         const val GET_POKEMON_API_PAGING_SIZE = 30
-        val service: PokemonApi by lazy { RetrofitBuilder.retrofit.create(PokemonApi::class.java) }
     }
 }

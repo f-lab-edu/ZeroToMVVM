@@ -2,98 +2,95 @@ package com.kova700.zerotomvvm.view.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kova700.zerotomvvm.data.api.PokemonApi
-import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
-import com.kova700.zerotomvvm.data.db.AppDataBase
+import com.kova700.zerotomvvm.data.api.PokemonService.Companion.GET_POKEMON_API_PAGING_SIZE
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
+import com.kova700.zerotomvvm.util.Failure
+import com.kova700.zerotomvvm.util.Success
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-//TODO : 로컬 DB혹은 Repository에서 Flow로 받아오게 수정해보자.
-class PokemonViewModel : ViewModel() {
+@HiltViewModel
+class PokemonViewModel @Inject constructor(
+    private val pokemonRepository: PokemonRepository
+) : ViewModel() {
 
-    private val pokemonRepository: PokemonRepository by lazy {
-        PokemonRepositoryImpl.getInstance(
-            PokemonApi.service,
-            AppDataBase.service
+    private val _eventFlow = MutableSharedFlow<PokemonUiEvent>()
+    val eventFlow: SharedFlow<PokemonUiEvent>
+        get() = _eventFlow
+
+    private var _isLoading = MutableStateFlow(false)
+    val isLoading: SharedFlow<Boolean>
+        get() = _isLoading
+
+    private var isLastDataLoaded = false
+    private val pokemonNumOffset: MutableStateFlow<Int> = MutableStateFlow(0)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pokemonListFlow = pokemonNumOffset
+        .flatMapLatest { offset -> loadPokemonList(offset) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = listOf()
         )
-    }
-    private var isPokemonLastData: Boolean = false
-    private var lastLoadPokemonNum = 0
 
-    val eventFlow = MutableSharedFlow<PokemonUiEvent>()
-    val pokemonListFlow = MutableStateFlow<List<PokemonListItem>>(listOf())
-    val wishPokemonListFlow = pokemonListFlow.map { it.filter { it.heart } }
-    var isLoading = MutableStateFlow(false)
-
-    init {
-        viewModelScope.launch { loadRemotePokemonList() }
-    }
-
-    private suspend fun loadRemotePokemonList(offset: Int = 0) {
-        pokemonRepository.loadRemotePokemonList(
-            offset = offset,
-            onStart = { isLoading.value = true },
-            onComplete = { isLoading.value = false },
-            onSuccess = {
-                pokemonListFlow.value = it
-                lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
-            },
-            onFailure = { loadRemotePokemonListFailCallback(it) },
-            onLastData = { isPokemonLastData = true }
+    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = listOf()
         )
-    }
 
-    //서버로부터 API요청이 실패하면 이전에 로컬 DB에 저장해놨던 데이터를 가져옴
-    private fun loadRemotePokemonListFailCallback(throwable: Throwable) = viewModelScope.launch {
-        startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${throwable.message}"))
-        loadAllLocalPokemonListSmallerThan(
-            lastLoadPokemonNum + GET_POKEMON_API_PAGING_SIZE
-        )
-    }
-
-    private suspend fun loadAllLocalPokemonListSmallerThan(targetNum: Int) {
-        pokemonRepository.loadAllLocalPokemonListSmallerThan(
-            targetNum = targetNum,
-            onSuccess = {
-                pokemonListFlow.value = it
-                lastLoadPokemonNum = it.last().pokemon.getPokemonNum()
-            }
-        )
-    }
-
-    suspend fun renewPokemonList() {
-        if (pokemonListFlow.value.isEmpty()) return
-        loadAllLocalPokemonListSmallerThan(lastLoadPokemonNum)
-    }
-
-    private suspend fun savePokemonToLocalDB(pokemonEntity: PokemonEntity) {
-        pokemonRepository.savePokemonToLocalDB(pokemonEntity)
-        renewPokemonList()
+    private suspend fun insertPokemonItem(pokemonEntity: PokemonEntity) {
+        pokemonRepository.insertPokemonItem(pokemonEntity)
     }
 
     private suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
         pokemonRepository.updatePokemonHeart(targetPokemonNum, heartValue)
-        renewPokemonList()
     }
 
     fun plusBtnClickListener() = viewModelScope.launch {
-        savePokemonToLocalDB(
+        insertPokemonItem(
             getRandomDummyEntity(pokemonListFlow.value.size + 1)
         )
     }
 
+    private suspend fun loadPokemonList(offset: Int = 0): Flow<List<PokemonListItem>> {
+        _isLoading.update { true }
+        val result = pokemonRepository.loadPokemonList(offset)
+        when (result) {
+            is Success -> {
+                isLastDataLoaded = result.isLast
+            }
+
+            is Failure -> {
+                startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${result.exception}"))
+            }
+        }
+        _isLoading.update { false }
+        return result.data
+    }
+
     fun loadNextPokemonList(lastVisibleItemPosition: Int) {
-        if (isLoading.value || isPokemonLastData ||
+        if (_isLoading.value || isLastDataLoaded ||
             pokemonListFlow.value.size - 1 > lastVisibleItemPosition
         ) return
-        viewModelScope.launch { loadRemotePokemonList(lastLoadPokemonNum) }
+
+        _isLoading.update { true }
+        pokemonNumOffset.update { pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE }
     }
 
     fun itemClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {
@@ -113,7 +110,7 @@ class PokemonViewModel : ViewModel() {
     }
 
     private suspend fun startEvent(event: PokemonUiEvent) {
-        eventFlow.emit(event)
+        _eventFlow.emit(event)
     }
 
     sealed interface PokemonUiEvent

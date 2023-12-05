@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.kova700.zerotomvvm.data.api.PokemonApi.Companion.GET_POKEMON_API_PAGING_SIZE
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonDao {
@@ -19,17 +19,17 @@ interface PokemonDao {
         "SELECT * FROM PokemonEntity " +
                 "WHERE num <= :targetNum "
     )
-    suspend fun getAllPokemonListSmallerThan(
+    fun getAllPokemonListSmallerThan(
         targetNum: Int
-    ): List<PokemonEntity>
+    ): Flow<List<PokemonEntity>>
 
     @Query(
         "SELECT * FROM PokemonEntity " +
                 "WHERE heart = :heartValue "
     )
-    suspend fun getPokemonListFromHeart(
+    fun getPokemonListFromHeart(
         heartValue: Boolean,
-    ): List<PokemonEntity>
+    ): Flow<List<PokemonEntity>>
 
     @Query(
         "Update PokemonEntity SET heart = :heartValue " +

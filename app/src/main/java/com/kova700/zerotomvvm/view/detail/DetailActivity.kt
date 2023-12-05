@@ -8,22 +8,28 @@ import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
 import com.kova700.zerotomvvm.databinding.ActivityDetailBinding
 import com.kova700.zerotomvvm.util.getSerializableExtraData
 import com.kova700.zerotomvvm.view.main.MainActivity.Companion.TO_DETAIL_SELECTED_ITEM_EXTRA
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
-    private lateinit var pokemonListItem: PokemonListItem
-    private val pokemonViewModel by viewModels<DetailViewModel>()
+
+    @Inject
+    lateinit var detailViewModelFactory: DetailViewModel.AssistedFactory
+    private val detailViewModel by viewModels<DetailViewModel> {
+        DetailViewModel.provideFactory(detailViewModelFactory, getPokemonExtraData())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        getPokemonExtraData()
         initUIComponent()
     }
 
-    private fun getPokemonExtraData() {
-        pokemonListItem = intent.getSerializableExtraData(
+    private fun getPokemonExtraData(): PokemonListItem {
+        return intent.getSerializableExtraData(
             TO_DETAIL_SELECTED_ITEM_EXTRA,
             PokemonListItem::class.java
         )!!
@@ -31,12 +37,12 @@ class DetailActivity : AppCompatActivity() {
 
     private fun initUIComponent() {
         Glide.with(this)
-            .load(pokemonListItem.pokemon.getImageUrl())
+            .load(detailViewModel.selectedItem.pokemon.getImageUrl())
             .into(binding.ivPokemonImageDetailActivity)
 
         binding.tgDetailActivity.apply {
-            isChecked = pokemonListItem.heart
-            setOnClickListener { pokemonViewModel.heartClickListener(pokemonListItem) }
+            isChecked = detailViewModel.selectedItem.heart
+            setOnClickListener { detailViewModel.heartClickListener() }
         }
     }
 }
