@@ -8,6 +8,7 @@ import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
 import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
 import com.kova700.zerotomvvm.util.Failure
+import com.kova700.zerotomvvm.util.NetworkResult
 import com.kova700.zerotomvvm.util.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -41,6 +44,17 @@ class PokemonViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val pokemonListFlow = pokemonNumOffset
         .flatMapLatest { offset -> loadPokemonList(offset) }
+        .onEach {
+            when (it) {
+                is Success -> {
+                    isLastDataLoaded = it.isLast
+                }
+                is Failure -> {
+                    startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${it.exception}"))
+                }
+            }
+        }
+        .map { it.data }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
@@ -68,20 +82,11 @@ class PokemonViewModel @Inject constructor(
         )
     }
 
-    private suspend fun loadPokemonList(offset: Int = 0): Flow<List<PokemonListItem>> {
+    private suspend fun loadPokemonList(offset: Int = 0): Flow<NetworkResult<List<PokemonListItem>>> {
         _isLoading.update { true }
         val result = pokemonRepository.loadPokemonList(offset)
-        when (result) {
-            is Success -> {
-                isLastDataLoaded = result.isLast
-            }
-
-            is Failure -> {
-                startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${result.exception}"))
-            }
-        }
         _isLoading.update { false }
-        return result.data
+        return result
     }
 
     fun loadNextPokemonList(lastVisibleItemPosition: Int) {
