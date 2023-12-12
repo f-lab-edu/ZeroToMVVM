@@ -19,29 +19,33 @@ class PokemonRepositoryImpl @Inject constructor(
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 
-    override suspend fun loadPokemonList(offset: Int): NetworkResult<Flow<List<PokemonListItem>>> {
+    //이 상황에 맨아래 예외를 던지는게 맞는가..?
+    override suspend fun loadPokemonList(offset: Int): Flow<NetworkResult<List<PokemonListItem>>> {
         runCatching { loadRemotePokemonList(offset) }
-            .onSuccess { isLast ->
-                return Success(
-                    data = loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE),
-                    isLast = isLast
-                )
-            }
-            .onFailure {
-                return Failure(
-                    data = loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE),
-                    exception = it
-                )
+            .onSuccess { return it }
+            .onFailure { throwable ->
+                return loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE)
+                    .map {
+                        Failure(
+                            data = it,
+                            exception = throwable
+                        )
+                    }
             }
         throw Exception() //뭔가 좀 애매하네..
     }
 
-    private suspend fun loadRemotePokemonList(offset: Int): Boolean {
+    private suspend fun loadRemotePokemonList(offset: Int): Flow<NetworkResult<List<PokemonListItem>>> {
         val response = pokemonService.getPokemon(offset = offset)
         val pokemonList = response.results
         insertPokemonList(pokemonList.toDBEntity())
-        val isLast = response.next == null
-        return isLast
+        return loadAllLocalPokemonListSmallerThan(offset + GET_POKEMON_API_PAGING_SIZE)
+            .map {
+                Success(
+                    data = it,
+                    isLast = response.next == null
+                )
+            }
     }
 
     private fun loadAllLocalPokemonListSmallerThan(targetNum: Int): Flow<List<PokemonListItem>> {

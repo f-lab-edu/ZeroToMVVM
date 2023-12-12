@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface PokemonRepository {
     suspend fun loadPokemonList(
         offset: Int
-    ): NetworkResult<Flow<List<PokemonListItem>>>
+    ): Flow<NetworkResult<List<PokemonListItem>>>
 
     fun loadWishPokemonList(): Flow<List<PokemonListItem>>
 
