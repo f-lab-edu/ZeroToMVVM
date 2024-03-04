@@ -16,10 +16,10 @@ import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
-import com.kova700.zerotomvvm.view.main.PokemonViewModel
-import com.kova700.zerotomvvm.view.main.PokemonViewModel.MoveToDetail
-import com.kova700.zerotomvvm.view.main.PokemonViewModel.PokemonUiEvent
-import com.kova700.zerotomvvm.view.main.PokemonViewModel.ShowToast
+import com.kova700.zerotomvvm.view.main.MainViewModel
+import com.kova700.zerotomvvm.view.main.MainViewModel.MoveToDetail
+import com.kova700.zerotomvvm.view.main.MainViewModel.PokemonUiEvent
+import com.kova700.zerotomvvm.view.main.MainViewModel.ShowToast
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
 
     @Inject
     lateinit var homeAdapter: PokemonListAdapter
@@ -55,34 +55,34 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.eventFlow.collect { event ->
+        mainViewModel.eventFlow.collect { event ->
             handleUiEvent(event)
         }
     }
 
     private fun observeLoadingFlag() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.isLoading.collect { isLoading ->
+        mainViewModel.isLoading.collect { isLoading ->
             handleLoading(isLoading)
         }
     }
 
     private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.pokemonListFlow.collect { pokemonList ->
+        mainViewModel.pokemonListFlow.collect { pokemonList ->
             homeAdapter.submitList(pokemonList)
         }
     }
 
     private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener { pokemonViewModel.plusBtnClickListener() }
+        binding.fabHomeFragment.setOnClickListener { mainViewModel.plusBtnClickListener() }
     }
 
     private fun initAdapter() {
         homeAdapter.apply {
             onItemClick = { itemPosition ->
-                pokemonViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
+                mainViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
             }
             onHeartClick = { itemPosition ->
-                pokemonViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
+                mainViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
             }
         }
     }
@@ -102,7 +102,7 @@ class HomeFragment : Fragment() {
         val rcvScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                pokemonViewModel.loadNextPokemonList(
+                mainViewModel.loadNextPokemonList(
                     gridLayoutManager.findLastVisibleItemPosition()
                 )
             }

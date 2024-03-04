@@ -15,7 +15,7 @@ import com.kova700.zerotomvvm.databinding.FragmentWishBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
-import com.kova700.zerotomvvm.view.main.PokemonViewModel
+import com.kova700.zerotomvvm.view.main.MainViewModel
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -26,7 +26,7 @@ class WishFragment : Fragment() {
 
     private var _binding: FragmentWishBinding? = null
     private val binding get() = _binding!!
-    private val pokemonViewModel by activityViewModels<PokemonViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
 
     @Inject
     lateinit var wishAdapter: PokemonListAdapter
@@ -50,19 +50,19 @@ class WishFragment : Fragment() {
     }
 
     private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.eventFlow.collect { event ->
+        mainViewModel.eventFlow.collect { event ->
             handleUiEvent(event)
         }
     }
 
     private fun observeLoadingFlag() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.isLoading.collect { isLoading ->
+        mainViewModel.isLoading.collect { isLoading ->
             handleLoading(isLoading)
         }
     }
 
     private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
-        pokemonViewModel.wishPokemonListFlow.collect { pokemonList ->
+        mainViewModel.wishPokemonListFlow.collect { pokemonList ->
             wishAdapter.submitList(pokemonList)
         }
     }
@@ -70,10 +70,10 @@ class WishFragment : Fragment() {
     private fun initAdapter() {
         wishAdapter.apply {
             onItemClick = { itemPosition ->
-                pokemonViewModel.itemClickListener(wishAdapter.currentList[itemPosition])
+                mainViewModel.itemClickListener(wishAdapter.currentList[itemPosition])
             }
             onHeartClick = { itemPosition ->
-                pokemonViewModel.wishHeartClickListener(wishAdapter.currentList[itemPosition])
+                mainViewModel.wishHeartClickListener(wishAdapter.currentList[itemPosition])
             }
         }
     }
@@ -116,10 +116,10 @@ class WishFragment : Fragment() {
             if (isLoading) View.VISIBLE else View.GONE
     }
 
-    private fun handleUiEvent(event: PokemonViewModel.PokemonUiEvent) {
+    private fun handleUiEvent(event: MainViewModel.PokemonUiEvent) {
         when (event) {
-            is PokemonViewModel.MoveToDetail -> moveToDetail(event.selectedItem)
-            is PokemonViewModel.ShowToast -> showToast(event.message)
+            is MainViewModel.MoveToDetail -> moveToDetail(event.selectedItem)
+            is MainViewModel.ShowToast -> showToast(event.message)
         }
     }
 }
