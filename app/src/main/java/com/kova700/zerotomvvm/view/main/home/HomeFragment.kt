@@ -16,10 +16,11 @@ import com.kova700.zerotomvvm.databinding.FragmentHomeBinding
 import com.kova700.zerotomvvm.util.showToast
 import com.kova700.zerotomvvm.view.detail.DetailActivity
 import com.kova700.zerotomvvm.view.main.MainActivity
+import com.kova700.zerotomvvm.view.main.MainUiState
 import com.kova700.zerotomvvm.view.main.MainViewModel
-import com.kova700.zerotomvvm.view.main.MainViewModel.MoveToDetail
-import com.kova700.zerotomvvm.view.main.MainViewModel.PokemonUiEvent
-import com.kova700.zerotomvvm.view.main.MainViewModel.ShowToast
+import com.kova700.zerotomvvm.view.main.MoveToDetail
+import com.kova700.zerotomvvm.view.main.PokemonUiEvent
+import com.kova700.zerotomvvm.view.main.ShowToast
 import com.kova700.zerotomvvm.view.main.adapter.PokemonListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -28,118 +29,120 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
-    private val mainViewModel by activityViewModels<MainViewModel>()
+	private var _binding: FragmentHomeBinding? = null
+	private val binding get() = _binding!!
+	private val mainViewModel by activityViewModels<MainViewModel>()
 
-    @Inject
-    lateinit var homeAdapter: PokemonListAdapter
+	@Inject
+	lateinit var homeAdapter: PokemonListAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+	override fun onCreateView(
+		inflater: LayoutInflater,
+		container: ViewGroup?,
+		savedInstanceState: Bundle?
+	): View {
+		_binding = FragmentHomeBinding.inflate(inflater, container, false)
+		return binding.root
+	}
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setPlusBtnClickListener()
-        observeUiEvent()
-        observeLoadingFlag()
-        observePokemonListFlow()
-        initAdapter()
-        initRecyclerView()
-    }
+	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+		super.onViewCreated(view, savedInstanceState)
+		observeUiState()
+		observeUiEvent()
+		initAdapter()
+		initRecyclerView()
+		setRetryBtnClickListener()
+	}
 
-    private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
-        mainViewModel.eventFlow.collect { event ->
-            handleUiEvent(event)
-        }
-    }
+	override fun onDestroyView() {
+		super.onDestroyView()
+		_binding = null
+	}
 
-    private fun observeLoadingFlag() = viewLifecycleOwner.lifecycleScope.launch {
-        mainViewModel.isLoading.collect { isLoading ->
-            handleLoading(isLoading)
-        }
-    }
 
-    private fun observePokemonListFlow() = viewLifecycleOwner.lifecycleScope.launch {
-        mainViewModel.pokemonListFlow.collect { pokemonList ->
-            homeAdapter.submitList(pokemonList)
-        }
-    }
+	private fun observeUiState() = viewLifecycleOwner.lifecycleScope.launch {
+		mainViewModel.uiState.collect { uistate ->
+			homeAdapter.submitList(uistate.pokemons)
+			handleLoading(uistate.uiState)
+			handelRetryBtn(uistate.uiState)
+		}
+	}
 
-    private fun setPlusBtnClickListener() {
-        binding.fabHomeFragment.setOnClickListener { mainViewModel.plusBtnClickListener() }
-    }
+	private fun observeUiEvent() = viewLifecycleOwner.lifecycleScope.launch {
+		mainViewModel.eventFlow.collect { event ->
+			handleUiEvent(event)
+		}
+	}
 
-    private fun initAdapter() {
-        homeAdapter.apply {
-            onItemClick = { itemPosition ->
-                mainViewModel.itemClickListener(homeAdapter.currentList[itemPosition])
-            }
-            onHeartClick = { itemPosition ->
-                mainViewModel.homeHeartClickListener(homeAdapter.currentList[itemPosition])
-            }
-        }
-    }
+	private fun setRetryBtnClickListener() {
+		binding.fabHomeFragment.setOnClickListener { mainViewModel.onRetryClick() }
+	}
 
-    private fun initRecyclerView() {
-        val gridLayoutManager = GridLayoutManager(requireActivity(), 2).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    return when (homeAdapter.getItemViewType(position)) {
-                        R.layout.item_pokemon_list -> 1
-                        else -> throw Exception("Unknown Item Layout")
-                    }
-                }
-            }
-        }
+	private fun initAdapter() {
+		homeAdapter.apply {
+			onItemClick = { itemPosition ->
+				mainViewModel.onItemClick(homeAdapter.currentList[itemPosition])
+			}
+			onHeartClick = { itemPosition ->
+				mainViewModel.onHeartClick(homeAdapter.currentList[itemPosition])
+			}
+		}
+	}
 
-        val rcvScrollListener = object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                mainViewModel.loadNextPokemonList(
-                    gridLayoutManager.findLastVisibleItemPosition()
-                )
-            }
-        }
+	private fun initRecyclerView() {
+		val gridLayoutManager = GridLayoutManager(requireActivity(), 2).apply {
+			spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+				override fun getSpanSize(position: Int): Int {
+					return when (homeAdapter.getItemViewType(position)) {
+						R.layout.item_pokemon_list -> 1
+						else -> throw Exception("Unknown Item Layout")
+					}
+				}
+			}
+		}
 
-        binding.rcvHomeFragment.apply {
-            adapter = homeAdapter
-            layoutManager = gridLayoutManager
-            addOnScrollListener(rcvScrollListener)
-        }
-    }
+		val rcvScrollListener = object : RecyclerView.OnScrollListener() {
+			override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+				super.onScrolled(recyclerView, dx, dy)
+				mainViewModel.loadNextPokemons(
+					gridLayoutManager.findLastVisibleItemPosition()
+				)
+			}
+		}
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+		binding.rcvHomeFragment.apply {
+			adapter = homeAdapter
+			layoutManager = gridLayoutManager
+			addOnScrollListener(rcvScrollListener)
+		}
+	}
 
-    private fun moveToDetail(selectedItem: PokemonListItem) {
-        val intent = Intent(activity, DetailActivity::class.java).apply {
-            putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
-        }
-        startActivity(intent)
-    }
+	private fun moveToDetail(selectedItem: PokemonListItem) {
+		val intent = Intent(activity, DetailActivity::class.java).apply {
+			putExtra(MainActivity.TO_DETAIL_SELECTED_ITEM_EXTRA, selectedItem)
+		}
+		startActivity(intent)
+	}
 
-    private fun showToast(message: String) {
-        requireActivity().showToast(message)
-    }
+	private fun showToast(message: String) {
+		requireActivity().showToast(message)
+	}
 
-    private fun handleUiEvent(event: PokemonUiEvent) {
-        when (event) {
-            is MoveToDetail -> moveToDetail(event.selectedItem)
-            is ShowToast -> showToast(event.message)
-        }
-    }
+	private fun handleUiEvent(event: PokemonUiEvent) {
+		when (event) {
+			is MoveToDetail -> moveToDetail(event.selectedItem)
+			is ShowToast -> showToast(event.message)
+		}
+	}
 
-    private fun handleLoading(isLoading: Boolean) {
-        _binding?.pbHomeFragment?.visibility =
-            if (isLoading) View.VISIBLE else View.GONE
-    }
+	private fun handleLoading(uiState: MainUiState.UiState) {
+		val isLoading = uiState == MainUiState.UiState.LOADING
+		_binding?.pbHomeFragment?.visibility =
+			if (isLoading) View.VISIBLE else View.GONE
+	}
+
+	private fun handelRetryBtn(uiState: MainUiState.UiState) {
+		val isError = uiState == MainUiState.UiState.ERROR
+		binding.fabHomeFragment.visibility = if (isError) View.VISIBLE else View.GONE
+	}
 }

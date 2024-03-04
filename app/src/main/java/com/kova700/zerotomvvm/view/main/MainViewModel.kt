@@ -2,123 +2,88 @@ package com.kova700.zerotomvvm.view.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kova700.zerotomvvm.data.api.PokemonService.Companion.GET_POKEMON_API_PAGING_SIZE
 import com.kova700.zerotomvvm.data.source.pokemon.PokemonListItem
-import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonEntity
-import com.kova700.zerotomvvm.data.source.pokemon.local.getRandomDummyEntity
 import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
-import com.kova700.zerotomvvm.util.Failure
-import com.kova700.zerotomvvm.util.NetworkResult
-import com.kova700.zerotomvvm.util.Success
+import com.kova700.zerotomvvm.view.main.MainUiState.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val pokemonRepository: PokemonRepository
+	private val pokemonRepository: PokemonRepository
 ) : ViewModel() {
 
-    private val _eventFlow = MutableSharedFlow<PokemonUiEvent>()
-    val eventFlow: SharedFlow<PokemonUiEvent>
-        get() = _eventFlow
+	private val _eventFlow = MutableSharedFlow<PokemonUiEvent>()
+	val eventFlow get() = _eventFlow.asSharedFlow()
 
-    private var _isLoading = MutableStateFlow(false)
-    val isLoading: SharedFlow<Boolean>
-        get() = _isLoading
+	private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Default)
+	val uiState get() = _uiState.asStateFlow()
 
-    private var isLastDataLoaded = false
-    private val pokemonNumOffset: MutableStateFlow<Int> = MutableStateFlow(0)
+	init {
+		observePokemons()
+		observeWishPokemons()
+		getPokemons()
+	}
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val pokemonListFlow = pokemonNumOffset
-        .flatMapLatest { offset -> loadPokemonList(offset) }
-        .onEach {
-            when (it) {
-                is Success -> {
-                    isLastDataLoaded = it.isLast
-                }
-                is Failure -> {
-                    startEvent(ShowToast("서버로부터 데이터 load를 실패했습니다. : ${it.exception}"))
-                }
-            }
-        }
-        .map { it.data }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-            initialValue = listOf()
-        )
+	private fun observePokemons() = viewModelScope.launch {
+		pokemonRepository.getPokemonsFlow().collect { newPokemons ->
+			updateState { copy(pokemons = newPokemons) }
+		}
+	}
 
-    val wishPokemonListFlow = pokemonRepository.loadWishPokemonList()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-            initialValue = listOf()
-        )
+	private fun observeWishPokemons() = viewModelScope.launch {
+		pokemonRepository.getWishPokemonsFlow().collect { wishedPokemons ->
+			updateState { copy(wishPokemons = wishedPokemons) }
+		}
+	}
 
-    private suspend fun insertPokemonItem(pokemonEntity: PokemonEntity) {
-        pokemonRepository.insertPokemonItem(pokemonEntity)
-    }
+	private fun getPokemons() = viewModelScope.launch {
+		updateState { copy(uiState = UiState.LOADING) }
+		runCatching { pokemonRepository.getPokemons() }
+			.onSuccess { updateState { copy(uiState = UiState.SUCCESS) } }
+			.onFailure {
+				ShowToast("서버로부터 데이터 load를 실패했습니다. : ${it.message}")
+				updateState { copy(uiState = UiState.ERROR) }
+			}
+	}
 
-    private suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
-        pokemonRepository.updatePokemonHeart(targetPokemonNum, heartValue)
-    }
+	fun loadNextPokemons(lastVisibleItemPosition: Int) {
+		if (uiState.value.pokemons.size - 1 > lastVisibleItemPosition ||
+			uiState.value.uiState == UiState.LOADING
+		) return
+		getPokemons()
+	}
 
-    fun plusBtnClickListener() = viewModelScope.launch {
-        insertPokemonItem(
-            getRandomDummyEntity(pokemonListFlow.value.size + 1)
-        )
-    }
+	fun onRetryClick() {
+		getPokemons()
+	}
 
-    private suspend fun loadPokemonList(offset: Int = 0): Flow<NetworkResult<List<PokemonListItem>>> {
-        _isLoading.update { true }
-        val result = pokemonRepository.loadPokemonList(offset)
-        _isLoading.update { false }
-        return result
-    }
+	fun onItemClick(selectedItem: PokemonListItem) {
+		startEvent(MoveToDetail(selectedItem))
+	}
 
-    fun loadNextPokemonList(lastVisibleItemPosition: Int) {
-        if (_isLoading.value || isLastDataLoaded ||
-            pokemonListFlow.value.size - 1 > lastVisibleItemPosition
-        ) return
+	fun onHeartClick(selectedItem: PokemonListItem) {
+		updatePokemonHeart(selectedItem)
+	}
 
-        _isLoading.update { true }
-        pokemonNumOffset.update { pokemonNumOffset.value + GET_POKEMON_API_PAGING_SIZE }
-    }
+	private fun updatePokemonHeart(selectedItem: PokemonListItem) = viewModelScope.launch {
+		pokemonRepository.updatePokemonHeart(selectedItem.pokemon, selectedItem.heart.not())
+	}
 
-    fun itemClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {
-        startEvent(MoveToDetail(selectedItem))
-    }
+	private fun startEvent(event: PokemonUiEvent) = viewModelScope.launch {
+		_eventFlow.emit(event)
+	}
 
-    fun wishHeartClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {
-        if (selectedItem.heart.not()) return@launch
-        updatePokemonHeart(selectedItem.pokemon.getPokemonNum(), false)
-    }
+	private inline fun updateState(block: MainUiState.() -> MainUiState) {
+		_uiState.update {
+			_uiState.value.block()
+		}
+	}
 
-    fun homeHeartClickListener(selectedItem: PokemonListItem) = viewModelScope.launch {
-        updatePokemonHeart(
-            selectedItem.pokemon.getPokemonNum(),
-            selectedItem.heart.not()
-        )
-    }
-
-    private suspend fun startEvent(event: PokemonUiEvent) {
-        _eventFlow.emit(event)
-    }
-
-    sealed interface PokemonUiEvent
-    data class MoveToDetail(val selectedItem: PokemonListItem) : PokemonUiEvent
-    data class ShowToast(val message: String) : PokemonUiEvent
 }
