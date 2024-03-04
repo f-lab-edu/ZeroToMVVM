@@ -8,33 +8,15 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonDao {
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
+	suspend fun insertPokemon(pokemon: PokemonEntity)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertPokemonList(pokemonList: List<PokemonEntity>)
+	@Query("DELETE FROM PokemonEntity where num = :num")
+	suspend fun deletePokemon(num: Int)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertPokemon(pokemon: PokemonEntity)
-
-    @Query(
-        "SELECT * FROM PokemonEntity " +
-                "WHERE num <= :targetNum "
-    )
-    fun getAllPokemonListSmallerThan(
-        targetNum: Int
-    ): Flow<List<PokemonEntity>>
-
-    @Query(
-        "SELECT * FROM PokemonEntity " +
-                "WHERE heart = :heartValue "
-    )
-    fun getPokemonListFromHeart(
-        heartValue: Boolean,
-    ): Flow<List<PokemonEntity>>
-
-    @Query(
-        "Update PokemonEntity SET heart = :heartValue " +
-                "WHERE num = :targetPokemonNum"
-    )
-    suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean)
-
+	@Query(
+		"SELECT * FROM PokemonEntity " +
+						"WHERE heart = :heartValue "
+	)
+	fun getWishPokemons(heartValue: Boolean = true): Flow<List<PokemonEntity>>
 }

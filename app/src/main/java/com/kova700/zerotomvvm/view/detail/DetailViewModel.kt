@@ -12,20 +12,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
-    private val pokemonRepository: PokemonRepository,
-    private val savedStateHandle: SavedStateHandle,
+	private val pokemonRepository: PokemonRepository,
+	private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var selectedItem: PokemonListItem =
-        savedStateHandle.get<PokemonListItem>(TO_DETAIL_SELECTED_ITEM_EXTRA)!!
+	var selectedItem: PokemonListItem =
+		savedStateHandle.get<PokemonListItem>(TO_DETAIL_SELECTED_ITEM_EXTRA)!!
 
-    private suspend fun updatePokemonHeart(targetPokemonNum: Int, heartValue: Boolean) {
-        pokemonRepository.updatePokemonHeart(targetPokemonNum, heartValue)
-    }
+	private fun updatePokemonHeart() = viewModelScope.launch {
+		pokemonRepository.updatePokemonHeart(selectedItem.pokemon, selectedItem.heart.not())
+		selectedItem = selectedItem.copy(heart = selectedItem.heart.not())
+	}
 
-    fun heartClickListener() = viewModelScope.launch {
-        selectedItem = selectedItem.copy(heart = selectedItem.heart.not())
-        updatePokemonHeart(selectedItem.pokemon.getPokemonNum(), selectedItem.heart)
-    }
+	fun onHeartClick(){
+		updatePokemonHeart()
+	}
 
 }

@@ -27,7 +27,7 @@ class DetailActivity : AppCompatActivity() {
 
         binding.tgDetailActivity.apply {
             isChecked = detailViewModel.selectedItem.heart
-            setOnClickListener { detailViewModel.heartClickListener() }
+            setOnClickListener { detailViewModel.onHeartClick() }
         }
     }
 }
