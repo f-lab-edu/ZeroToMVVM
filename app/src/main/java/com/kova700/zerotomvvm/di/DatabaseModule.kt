@@ -2,8 +2,8 @@ package com.kova700.zerotomvvm.di
 
 import android.app.Application
 import androidx.room.Room
-import com.kova700.zerotomvvm.data.db.AppDataBase
-import com.kova700.zerotomvvm.data.source.pokemon.local.PokemonDao
+import com.kova700.zerotomvvm.data.local.AppDataBase
+import com.kova700.zerotomvvm.data.local.PokemonDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
