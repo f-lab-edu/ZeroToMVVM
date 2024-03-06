@@ -21,7 +21,6 @@
 ### Google-Recommended-Architecture
 ![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/2255dfd5-0d51-485c-8837-aeffd6177962)
 
-![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/f029b708-0a74-48f7-8605-d5849b2f0822)
 </br>
 
 ## *****Data Flow***** 
