@@ -12,8 +12,8 @@
 | ETC |Jetpack-Navigation, ViewBinding, Glide, ListAdapter |
 </br>
 
-## *****MVC / MVP / MVVM*****
-![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/a1fed65d-604b-44cb-8834-6880c96375cb)
+## *****MVP / MVVM*****
+![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/5fc34ee7-7fd2-4432-9368-86016f0025fa)
 
 </br>
 
