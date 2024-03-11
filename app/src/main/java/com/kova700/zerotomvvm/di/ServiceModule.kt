@@ -1,6 +1,6 @@
 package com.kova700.zerotomvvm.di
 
-import com.kova700.zerotomvvm.data.api.PokemonService
+import com.kova700.zerotomvvm.data.remote.PokemonService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,7 +1,7 @@
 package com.kova700.zerotomvvm.di
 
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepository
-import com.kova700.zerotomvvm.data.source.pokemon.remote.PokemonRepositoryImpl
+import com.kova700.zerotomvvm.domain.repositry.PokemonRepository
+import com.kova700.zerotomvvm.data.repository.PokemonRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
