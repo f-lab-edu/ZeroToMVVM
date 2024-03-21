@@ -18,8 +18,9 @@
 </br>
 
 ## *****Architecture*****
-### Google-Recommended-Architecture
-![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/2255dfd5-0d51-485c-8837-aeffd6177962)
+### Clean-Architecture
+![image](https://github.com/f-lab-edu/ZeroToMVVM/assets/81726145/40005199-72fc-4f19-96f3-ef0d81ba4104)
+
 
 </br>
 
