@@ -57,7 +57,10 @@
         └── wish
 ```
 
+</br>
+
 ## *****Technical Experience*****
+
 ## 1) 비대해진 Activity의 책임 분할
 ### ■ 문제
 - 아무런 아키텍처를 적용하지 않았을 때, Activity가 데이터 호출, 가공, UI 갱신 등 너무 많은 책임을 가지게
